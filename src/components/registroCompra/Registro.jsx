@@ -11,6 +11,8 @@ import Papa from 'papaparse';
 import { BsToggleOn, BsToggleOff } from 'react-icons/bs';
 import { BsSlashCircle } from 'react-icons/bs';
 
+import { BsFileEarmarkPdfFill, BsFileEarmarkCodeFill } from 'react-icons/bs';
+
 const initialData = [
   {
     id: 1,
@@ -21,9 +23,9 @@ const initialData = [
     fecha: '2024-01-10',
     cantidad: 10,
     precio: 120.00,
-    pdfFile: null,
-    xmlFile: null,
-    activo: true // <--- nuevo
+   xmlFile: null,
+pdfFile: null,
+    activo: true, // <--- nuevo
   },
   {
     id: 2,
@@ -34,9 +36,9 @@ const initialData = [
     fecha: '2024-02-14',
     cantidad: 5,
     precio: 35.00,
-    pdfFile: null,
-    xmlFile: null,
-    activo: true
+   xmlFile: null,
+pdfFile: null,
+    activo: true,
   },
   {
     id: 3,
@@ -47,9 +49,9 @@ const initialData = [
     fecha: '2024-03-01',
     cantidad: 8,
     precio: 60.00,
-    pdfFile: null,
     xmlFile: null,
-    activo: false
+pdfFile: null,
+    activo: false,
   },
 ];
 
@@ -189,9 +191,17 @@ const handleToggleStatus = () => {
   setToggleItem(null);
   setToggleReason('');
 };
+
+const toggleActivo = (id) => {
+  setData(prev =>
+    prev.map(item =>
+      item.id === id ? { ...item, activo: !item.activo } : item
+    )
+  );
+};
   return (
     <div className="container py-4">
-      <h4 className="fw-bold mb-3">Recursos Administracion</h4>
+      <h4 className="fw-bold mb-3">Recursos</h4>
       <Row className="g-3 mb-3">
         <Col md={4}>
           <InputGroup>
@@ -253,145 +263,116 @@ const handleToggleStatus = () => {
     <th>Acciones</th>
   </tr>
 </thead>
-          <tbody className="text-center align-middle">
-            {filteredData.map(item => (
-              <tr key={item.id}>
-                <td>
-                  <Form.Check
-                    type="checkbox"
-                    checked={selectedItems.includes(item.id)}
-                    onChange={() => toggleRow(item.id)}
-                  />
-                </td>
-                <td>{item.cable}</td>
-                <td>{item.tipo}</td>
-                <td>{item.recurso}</td>
-                <td>{item.descripcion}</td>
-                <td>{item.fecha}</td>
-                <td>{item.cantidad}</td>
-                <td>${item.precio.toFixed(2)}</td>
-                <td>
-  <span
-    style={{
-      color: '#fff',
-      backgroundColor: item.activo ? '#f9b91b' : '#a8a8a8',
-      padding: '4px 10px',
-      borderRadius: '12px',
-      fontWeight: 'bold',
-      display: 'inline-block',
-      minWidth: '80px',
-      textAlign: 'center'
-    }}
-  >
-    {item.activo ? 'Activo' : 'Inactivo'}
-  </span>
-</td>
-<td className="d-flex flex-column gap-1 align-items-center">
-  <Button size="sm" variant="dark" onClick={() => handleEdit(item)}>
-    <BsPencilFill />
-  </Button>
-<td className="d-flex flex-column gap-1 align-items-center">
-  <Button size="sm" variant="dark" onClick={() => handleEdit(item)}>
-    <BsPencilFill />
-  </Button>
+        <tbody className="text-center align-middle">
+  {filteredData.map(item => (
+    <tr key={item.id}>
+      <td>
+        <Form.Check
+          type="checkbox"
+          checked={selectedItems.includes(item.id)}
+          onChange={() => toggleRow(item.id)}
+        />
+      </td>
+      <td>{item.cable}</td>
+      <td>{item.tipo}</td>
+      <td>{item.recurso}</td>
+      <td>{item.descripcion}</td>
+      <td>{item.fecha}</td>
+      <td>{item.cantidad}</td>
+      <td>${item.precio.toFixed(2)}</td>
+      <td>
+        <span
+          style={{
+            color: '#fff',
+            backgroundColor: item.activo ? '#f9b91b' : '#a8a8a8',
+            padding: '4px 10px',
+            borderRadius: '12px',
+            fontWeight: 'bold',
+            display: 'inline-block',
+            minWidth: '80px',
+            textAlign: 'center'
+          }}
+        >
+          {item.activo ? 'Activo' : 'Inactivo'}
+        </span>
+      </td>
+      <td className="d-flex flex-column gap-1 align-items-center">
+        <Button size="sm" variant="dark" onClick={() => handleEdit(item)}>
+          <BsPencilFill />
+        </Button>
 
-  <Button
-    size="sm"
-    variant="outline-danger"
-    onClick={() => handleDelete(item.id)}
-    style={{ color: '#e52122', borderColor: '#e52122' }}
-  >
-    <BsTrashFill />
-  </Button>
+        <Button
+          size="sm"
+          variant="outline-danger"
+          onClick={() => handleDelete(item.id)}
+          style={{ color: '#e52122', borderColor: '#e52122' }}
+        >
+          <BsTrashFill />
+        </Button>
 
-  <Button
-    size="sm"
-    variant={item.activo ? "outline-success" : "outline-secondary"}
-    onClick={() => toggleActivo(item.id)}
-    title={item.activo ? "Deshabilitar" : "Habilitar"}
-  >
-    {item.activo ? <BsToggleOn /> : <BsToggleOff />}
-  </Button>
+        <Button
+          size="sm"
+          variant="outline-warning"
+          onClick={() => {
+            setToggleItem(item);
+            setShowToggleModal(true);
+          }}
+          style={{ color: '#ee722d', borderColor: '#ee722d' }}
+        >
+          <BsSlashCircle />
+        </Button>
 
-  <Form.Label className="btn btn-sm btn-secondary mb-0">
-    PDF
-    <Form.Control
-      type="file"
-      accept=".pdf"
-      hidden
-      onChange={e => handleFileUpload(item.id, 'pdf', e.target.files[0])}
-    />
-  </Form.Label>
-  {item.pdfFile && (
-    <a href={item.pdfFile} download className="btn btn-sm btn-outline-primary">📄</a>
-  )}
-
-  <Form.Label className="btn btn-sm btn-secondary mb-0">
-    XML
+{/* Botón para XML */}
+{!item.xmlFile ? (
+  <Form.Group className="mb-1">
     <Form.Control
       type="file"
       accept=".xml"
-      hidden
       onChange={e => handleFileUpload(item.id, 'xml', e.target.files[0])}
+      size="sm"
     />
-  </Form.Label>
-  {item.xmlFile && (
-    <a href={item.xmlFile} download className="btn btn-sm btn-outline-success">🧾</a>
-  )}
-</td>
+  </Form.Group>
+) : (
   <Button
     size="sm"
-    variant="outline-danger"
-    onClick={() => handleDelete(item.id)}
-    style={{ color: '#e52122', borderColor: '#e52122' }}
+    variant="outline-primary"
+    href={item.xmlFile}
+    download={`archivo-${item.id}.xml`}
+    title="Descargar XML"
   >
-    <BsTrashFill />
+    <BsFileEarmarkCodeFill />
   </Button>
+)}
 
-  <Button
-  size="sm"
-  variant="outline-warning"
-  onClick={() => {
-    setToggleItem(item);
-    setShowToggleModal(true);
-  }}
-  style={{ color: '#ee722d', borderColor: '#ee722d' }}
->
-  <BsSlashCircle />
-</Button>
-
-  <Form.Label className="btn btn-sm btn-secondary mb-0">
-    PDF
+{/* Botón para PDF */}
+{!item.pdfFile ? (
+  <Form.Group className="mb-1">
     <Form.Control
       type="file"
       accept=".pdf"
-      hidden
       onChange={e => handleFileUpload(item.id, 'pdf', e.target.files[0])}
+      size="sm"
     />
-  </Form.Label>
-  {item.pdfFile && (
-    <a href={item.pdfFile} download className="btn btn-sm btn-outline-primary">📄</a>
-  )}
+  </Form.Group>
+) : (
+  <Button
+    size="sm"
+    variant="outline-danger"
+    href={item.pdfFile}
+    download={`archivo-${item.id}.pdf`}
+    title="Descargar PDF"
+  >
+    <BsFileEarmarkPdfFill />
+  </Button>
+)}
 
-  <Form.Label className="btn btn-sm btn-secondary mb-0">
-    XML
-    <Form.Control
-      type="file"
-      accept=".xml"
-      hidden
-      onChange={e => handleFileUpload(item.id, 'xml', e.target.files[0])}
-    />
-  </Form.Label>
-  {item.xmlFile && (
-    <a href={item.xmlFile} download className="btn btn-sm btn-outline-success">🧾</a>
+      </td>
+    </tr>
+  ))}
+  {filteredData.length === 0 && (
+    <tr><td colSpan={10} className="text-center py-4">No hay registros.</td></tr>
   )}
-</td>
-              </tr>
-            ))}
-            {filteredData.length === 0 && (
-              <tr><td colSpan={9} className="text-center py-4">No hay registros.</td></tr>
-            )}
-          </tbody>
+</tbody>
         </Table>
       </div>
 

@@ -22,9 +22,9 @@ import 'jspdf-autotable';
 import Papa from 'papaparse';
 
 const initialData = [
-  { id: 1, cable: 'Cable A', tipo: 'HDMI', recurso: 'Monitor', fecha: '2024-01-10', cantidad: 10, precio: 120.00 },
-  { id: 2, cable: 'Cable B', tipo: 'USB', recurso: 'Teclado', fecha: '2024-02-14', cantidad: 5, precio: 35.00 },
-  { id: 3, cable: 'Cable C', tipo: 'Ethernet', recurso: 'Router', fecha: '2024-03-01', cantidad: 8, precio: 60.00 },
+  { id: 1, clabe: 'clabe A', tipo: 'HDMI', recurso: 'Monitor', fecha: '2024-06-10', cantidad: 10, precio: 120.00 },
+  { id: 2, clabe: 'clabe B', tipo: 'USB', recurso: 'Teclado', fecha: '2024-02-14', cantidad: 5, precio: 35.00 },
+  { id: 3, clabe: 'clabe C', tipo: 'Ethernet', recurso: 'Router', fecha: '2024-03-01', cantidad: 8, precio: 60.00 },
 ];
 
 const Registro = () => {
@@ -36,7 +36,7 @@ const Registro = () => {
   const [editingItem, setEditingItem] = useState(null);
 
   const filteredData = data.filter(item =>
-    item.cable.toLowerCase().includes(search.toLowerCase()) ||
+    item.clabe.toLowerCase().includes(search.toLowerCase()) ||
     item.tipo.toLowerCase().includes(search.toLowerCase()) ||
     item.recurso.toLowerCase().includes(search.toLowerCase())
   );
@@ -102,9 +102,9 @@ const Registro = () => {
     doc.text('Listado de Recursos', 14, 10);
     doc.autoTable({
       startY: 20,
-      head: [['Cable', 'Tipo', 'Recurso', 'Fecha', 'Cantidad', 'Precio']],
+      head: [['clabe', 'Tipo', 'Recurso', 'Fecha', 'Cantidad', 'Precio']],
       body: exportData.map(item => [
-        item.cable,
+        item.clabe,
         item.tipo,
         item.recurso,
         item.fecha,
@@ -122,7 +122,7 @@ const Registro = () => {
         <Col md={6}>
           <InputGroup>
             <Form.Control
-              placeholder="Buscar recurso, tipo o cable..."
+              placeholder="Buscar recurso, tipo o clabe..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -155,7 +155,7 @@ const Registro = () => {
                   onChange={e => handleSelectAll(e.target.checked)}
                 />
               </th>
-              <th>Cable</th>
+              <th>clabe</th>
               <th>Tipo</th>
               <th>Recurso</th>
               <th>Fecha</th>
@@ -174,7 +174,7 @@ const Registro = () => {
                     onChange={() => toggleRow(item.id)}
                   />
                 </td>
-                <td>{item.cable}</td>
+                <td>{item.clabe}</td>
                 <td>{item.tipo}</td>
                 <td>{item.recurso}</td>
                 <td>{item.fecha}</td>
@@ -216,10 +216,10 @@ const Registro = () => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-2">
-              <Form.Label>Cable</Form.Label>
+              <Form.Label>clabe</Form.Label>
               <Form.Control
-                value={editingItem?.cable || ''}
-                onChange={(e) => setEditingItem({ ...editingItem, cable: e.target.value })}
+                value={editingItem?.clabe || ''}
+                onChange={(e) => setEditingItem({ ...editingItem, clabe: e.target.value })}
               />
             </Form.Group>
             <Form.Group className="mb-2">

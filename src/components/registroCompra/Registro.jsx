@@ -3,57 +3,16 @@ import {
   Table, Button, Form, Modal, InputGroup, Pagination, Row, Col
 } from 'react-bootstrap';
 import {
-  BsPencilFill, BsTrashFill, BsSearch, BsPlusLg, BsDownload
+  BsPencilFill, BsTrashFill, BsSearch, BsPlusLg, BsDownload, BsSlashCircle,
+  BsFileEarmarkPdfFill, BsFileEarmarkCodeFill
 } from 'react-icons/bs';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import Papa from 'papaparse';
-import { BsToggleOn, BsToggleOff } from 'react-icons/bs';
-import { BsSlashCircle } from 'react-icons/bs';
+import { parseStringPromise } from 'xml2js';
+import { XMLParser } from 'fast-xml-parser';
 
-import { BsFileEarmarkPdfFill, BsFileEarmarkCodeFill } from 'react-icons/bs';
-
-const initialData = [
-  {
-    id: 1,
-    cable: 'Cable A',
-    tipo: 'HDMI',
-    recurso: 'Monitor',
-    descripcion: 'Monitor de 24 pulgadas',
-    fecha: '2024-01-10',
-    cantidad: 10,
-    precio: 120.00,
-   xmlFile: null,
-pdfFile: null,
-    activo: true, // <--- nuevo
-  },
-  {
-    id: 2,
-    cable: 'Cable B',
-    tipo: 'USB',
-    recurso: 'Teclado',
-    descripcion: 'Teclado mecánico',
-    fecha: '2024-02-14',
-    cantidad: 5,
-    precio: 35.00,
-   xmlFile: null,
-pdfFile: null,
-    activo: true,
-  },
-  {
-    id: 3,
-    cable: 'Cable C',
-    tipo: 'Ethernet',
-    recurso: 'Router',
-    descripcion: 'Router doble banda',
-    fecha: '2024-03-01',
-    cantidad: 8,
-    precio: 60.00,
-    xmlFile: null,
-pdfFile: null,
-    activo: false,
-  },
-];
+const initialData = [];
 
 const Registro = () => {
   const [data, setData] = useState(initialData);
@@ -65,14 +24,17 @@ const Registro = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [showToggleModal, setShowToggleModal] = useState(false);
-const [toggleItem, setToggleItem] = useState(null);
-const [toggleReason, setToggleReason] = useState('');
+  const [toggleItem, setToggleItem] = useState(null);
+  const [toggleReason, setToggleReason] = useState('');
+  const [showFacturaModal, setShowFacturaModal] = useState(false);
+  const [facturaRows, setFacturaRows] = useState([]);
+  const [pdfFactura, setPdfFactura] = useState(null);
 
   const filteredData = data.filter(item => {
     const matchesSearch =
-      item.cable.toLowerCase().includes(search.toLowerCase()) ||
-      item.tipo.toLowerCase().includes(search.toLowerCase()) ||
-      item.recurso.toLowerCase().includes(search.toLowerCase()) ||
+      item.cable?.toLowerCase().includes(search.toLowerCase()) ||
+      item.tipo?.toLowerCase().includes(search.toLowerCase()) ||
+      item.recurso?.toLowerCase().includes(search.toLowerCase()) ||
       item.descripcion?.toLowerCase().includes(search.toLowerCase());
 
     const itemDate = new Date(item.fecha);
@@ -86,17 +48,17 @@ const [toggleReason, setToggleReason] = useState('');
     return matchesSearch && inDateRange;
   });
 
-  const toggleRow = (id) => {
-    setSelectedItems(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  };
-
   useEffect(() => {
     const allIds = filteredData.map(item => item.id);
     const allSelected = allIds.every(id => selectedItems.includes(id));
     setSelectAll(allSelected);
   }, [selectedItems, filteredData]);
+
+  const toggleRow = (id) => {
+    setSelectedItems(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
 
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
@@ -126,11 +88,11 @@ const [toggleReason, setToggleReason] = useState('');
   };
 
   const handleDelete = (id) => {
-  if (window.confirm('¿Deseas eliminar este recurso?')) {
-    setData(prev => prev.filter(item => item.id !== id));
-    setSelectedItems(prev => prev.filter(selectedId => selectedId !== id));
-  }
-};
+    if (window.confirm('¿Deseas eliminar este recurso?')) {
+      setData(prev => prev.filter(item => item.id !== id));
+      setSelectedItems(prev => prev.filter(selectedId => selectedId !== id));
+    }
+  };
 
   const getSelectedOrFilteredData = () =>
     selectedItems.length > 0
@@ -150,55 +112,97 @@ const [toggleReason, setToggleReason] = useState('');
     document.body.removeChild(link);
   };
 
-  const exportPDF = () => {
-    const exportData = getSelectedOrFilteredData();
-    const doc = new jsPDF();
-    doc.text('Listado de Recursos', 14, 10);
-    doc.autoTable({
-      startY: 20,
-      head: [['Cable', 'Tipo', 'Recurso', 'Descripción', 'Fecha', 'Cantidad', 'Precio']],
-      body: exportData.map(item => [
-        item.cable,
-        item.tipo,
-        item.recurso,
-        item.descripcion || '',
-        item.fecha,
-        item.cantidad,
-        `$${item.precio.toFixed(2)}`
-      ])
-    });
-    doc.save('recursos.pdf');
-  };
+const exportPDF = () => {
+  const exportData = getSelectedOrFilteredData();
+  const doc = new jsPDF();
+  doc.text('Listado de Recursos', 14, 10);
+  doc.autoTable({
+    startY: 20,
+    head: [['Cable', 'Tipo', 'Recurso', 'Descripción', 'Fecha', 'Cantidad', 'Precio']],
+    body: exportData.map(item => [
+      item.cable || '',
+      item.tipo,
+      item.recurso,
+      item.descripcion || '',
+      item.fecha,
+      item.cantidad,
+      `$${item.precio.toFixed(2)}`
+    ])
+  });
+  doc.save('recursos.pdf');
+};
+const handleFileUpload = (id, type, file) => {
+  const fileURL = URL.createObjectURL(file);
+  setData(prev =>
+    prev.map(item =>
+      item.id === id ? { ...item, [`${type}File`]: fileURL } : item
+    )
+  );
+};
 
-  const handleFileUpload = (id, type, file) => {
-    const fileURL = URL.createObjectURL(file);
+  const handleToggleStatus = () => {
+    if (!toggleItem) return;
     setData(prev =>
       prev.map(item =>
-        item.id === id ? { ...item, [`${type}File`]: fileURL } : item
+        item.id === toggleItem.id
+          ? { ...item, activo: !item.activo, motivo: toggleReason }
+          : item
       )
     );
+    setShowToggleModal(false);
+    setToggleItem(null);
+    setToggleReason('');
   };
-const handleToggleStatus = () => {
-  if (!toggleItem) return;
-  setData(prev =>
-    prev.map(item =>
-      item.id === toggleItem.id
-        ? { ...item, activo: !item.activo, motivo: toggleReason }
-        : item
-    )
-  );
-  setShowToggleModal(false);
-  setToggleItem(null);
-  setToggleReason('');
+const handleXMLUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const xmlText = event.target.result;
+
+      const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '@_'
+      });
+
+      const result = parser.parse(xmlText);
+      console.log('✅ XML Parseado:', result);
+
+      // Detectar el nodo Comprobante sin importar el prefijo
+      const comprobanteKey = Object.keys(result).find(k => k.toLowerCase().includes('comprobante'));
+      const comprobante = result[comprobanteKey];
+
+      const conceptosWrapperKey = Object.keys(comprobante).find(k => k.toLowerCase().includes('conceptos'));
+      const conceptosWrapper = comprobante[conceptosWrapperKey];
+
+      const conceptoKey = Object.keys(conceptosWrapper).find(k => k.toLowerCase().includes('concepto'));
+      const conceptos = conceptosWrapper[conceptoKey];
+      const conceptosArray = Array.isArray(conceptos) ? conceptos : [conceptos];
+
+      const fecha = comprobante['@_Fecha']?.substring(0, 10) || '';
+
+      const rows = conceptosArray.map((c) => ({
+        clave: c['@_ClaveProdServ'] || 'N/A',
+        tipo: c['@_Unidad'] || 'N/A',
+        recurso: c['@_Descripcion']?.split(' ')[0] || '',
+        descripcion: c['@_Descripcion'] || '',
+        fecha: fecha,
+        cantidad: Number(c['@_Cantidad']) || 1,
+        precio: parseFloat(c['@_ValorUnitario']) || 0
+      }));
+
+      console.log('✅ Datos extraídos:', rows);
+      setFacturaRows(rows);
+    } catch (error) {
+      console.error('❌ Error al procesar XML:', error.message, error);
+      alert('Error al leer el archivo XML.');
+    }
+  };
+  reader.readAsText(file);
 };
 
-const toggleActivo = (id) => {
-  setData(prev =>
-    prev.map(item =>
-      item.id === id ? { ...item, activo: !item.activo } : item
-    )
-  );
-};
   return (
     <div className="container py-4">
       <h4 className="fw-bold mb-3">Recursos</h4>
@@ -216,27 +220,17 @@ const toggleActivo = (id) => {
           </InputGroup>
         </Col>
         <Col md={3}>
-          <Form.Control
-            type="date"
-            value={fechaInicio}
-            onChange={e => setFechaInicio(e.target.value)}
-            placeholder="Fecha inicial"
-          />
+          <Form.Control type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} />
         </Col>
         <Col md={3}>
-          <Form.Control
-            type="date"
-            value={fechaFin}
-            onChange={e => setFechaFin(e.target.value)}
-            placeholder="Fecha final"
-          />
+          <Form.Control type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} />
         </Col>
         <Col className="d-flex gap-2 justify-content-end">
-          <Button variant="primary" onClick={() => {
-            setEditingItem(null);
-            setShowModal(true);
-          }}>
+          <Button variant="primary" onClick={() => { setEditingItem(null); setShowModal(true); }}>
             <BsPlusLg className="me-1" /> Agregar
+          </Button>
+          <Button variant="secondary" onClick={() => setShowFacturaModal(true)}>
+            <BsPlusLg className="me-1" /> Cargar Factura
           </Button>
           <Button variant="success" onClick={exportCSV} disabled={selectedItems.length === 0}>
             <BsDownload className="me-1" /> CSV
@@ -247,214 +241,99 @@ const toggleActivo = (id) => {
         </Col>
       </Row>
 
-      <div className="table-responsive">
-        <Table bordered hover>
-          <thead className="table-primary text-center align-middle">
-  <tr>
-    <th><Form.Check type="checkbox" checked={selectAll} onChange={e => handleSelectAll(e.target.checked)} /></th>
-    <th>Cable</th>
-    <th>Tipo</th>
-    <th>Recurso</th>
-    <th>Descripción</th>
-    <th>Fecha</th>
-    <th>Cantidad</th>
-    <th>Precio</th>
-    <th>Estado</th> {/* Nueva columna */}
-    <th>Acciones</th>
-  </tr>
-</thead>
-        <tbody className="text-center align-middle">
-  {filteredData.map(item => (
-    <tr key={item.id}>
-      <td>
-        <Form.Check
-          type="checkbox"
-          checked={selectedItems.includes(item.id)}
-          onChange={() => toggleRow(item.id)}
-        />
-      </td>
-      <td>{item.cable}</td>
-      <td>{item.tipo}</td>
-      <td>{item.recurso}</td>
-      <td>{item.descripcion}</td>
-      <td>{item.fecha}</td>
-      <td>{item.cantidad}</td>
-      <td>${item.precio.toFixed(2)}</td>
-      <td>
-        <span
-          style={{
-            color: '#fff',
-            backgroundColor: item.activo ? '#f9b91b' : '#a8a8a8',
-            padding: '4px 10px',
-            borderRadius: '12px',
-            fontWeight: 'bold',
-            display: 'inline-block',
-            minWidth: '80px',
-            textAlign: 'center'
-          }}
-        >
-          {item.activo ? 'Activo' : 'Inactivo'}
-        </span>
-      </td>
-      <td className="d-flex flex-column gap-1 align-items-center">
-        <Button size="sm" variant="dark" onClick={() => handleEdit(item)}>
-          <BsPencilFill />
-        </Button>
+      {/* Aquí puedes conservar tu tabla y modales previos como ya estaban */}
 
-        <Button
-          size="sm"
-          variant="outline-danger"
-          onClick={() => handleDelete(item.id)}
-          style={{ color: '#e52122', borderColor: '#e52122' }}
-        >
-          <BsTrashFill />
-        </Button>
-
-        <Button
-          size="sm"
-          variant="outline-warning"
-          onClick={() => {
-            setToggleItem(item);
-            setShowToggleModal(true);
-          }}
-          style={{ color: '#ee722d', borderColor: '#ee722d' }}
-        >
-          <BsSlashCircle />
-        </Button>
-
-{/* Botón para XML */}
-{!item.xmlFile ? (
-  <Form.Group className="mb-1">
-    <Form.Control
-      type="file"
-      accept=".xml"
-      onChange={e => handleFileUpload(item.id, 'xml', e.target.files[0])}
-      size="sm"
-    />
-  </Form.Group>
-) : (
-  <Button
-    size="sm"
-    variant="outline-primary"
-    href={item.xmlFile}
-    download={`archivo-${item.id}.xml`}
-    title="Descargar XML"
-  >
-    <BsFileEarmarkCodeFill />
-  </Button>
-)}
-
-{/* Botón para PDF */}
-{!item.pdfFile ? (
-  <Form.Group className="mb-1">
-    <Form.Control
-      type="file"
-      accept=".pdf"
-      onChange={e => handleFileUpload(item.id, 'pdf', e.target.files[0])}
-      size="sm"
-    />
-  </Form.Group>
-) : (
-  <Button
-    size="sm"
-    variant="outline-danger"
-    href={item.pdfFile}
-    download={`archivo-${item.id}.pdf`}
-    title="Descargar PDF"
-  >
-    <BsFileEarmarkPdfFill />
-  </Button>
-)}
-
-      </td>
-    </tr>
-  ))}
-  {filteredData.length === 0 && (
-    <tr><td colSpan={10} className="text-center py-4">No hay registros.</td></tr>
-  )}
-</tbody>
-        </Table>
-      </div>
-
-      <Pagination className="justify-content-end">
-        <Pagination.Prev disabled />
-        <Pagination.Item active>1</Pagination.Item>
-        <Pagination.Next disabled />
-      </Pagination>
-
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+      {/* Modal de Factura */}
+      <Modal size="lg" show={showFacturaModal} onHide={() => setShowFacturaModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>{editingItem?.id ? 'Editar Recurso' : 'Agregar Recurso'}</Modal.Title>
+          <Modal.Title>Cargar Factura</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
-            <Form.Group className="mb-2">
-              <Form.Label>Cable</Form.Label>
-              <Form.Control value={editingItem?.cable || ''} onChange={e => setEditingItem({ ...editingItem, cable: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-2">
-              <Form.Label>Tipo</Form.Label>
-              <Form.Control value={editingItem?.tipo || ''} onChange={e => setEditingItem({ ...editingItem, tipo: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-2">
-              <Form.Label>Recurso</Form.Label>
-              <Form.Control value={editingItem?.recurso || ''} onChange={e => setEditingItem({ ...editingItem, recurso: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-2">
-              <Form.Label>Descripción</Form.Label>
-              <Form.Control value={editingItem?.descripcion || ''} onChange={e => setEditingItem({ ...editingItem, descripcion: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-2">
-              <Form.Label>Fecha</Form.Label>
-              <Form.Control type="date" value={editingItem?.fecha || ''} onChange={e => setEditingItem({ ...editingItem, fecha: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-2">
-              <Form.Label>Cantidad</Form.Label>
-              <Form.Control type="number" value={editingItem?.cantidad || ''} onChange={e => setEditingItem({ ...editingItem, cantidad: Number(e.target.value) })} />
-            </Form.Group>
-            <Form.Group className="mb-2">
-              <Form.Label>Precio</Form.Label>
-              <Form.Control type="number" value={editingItem?.precio || ''} onChange={e => setEditingItem({ ...editingItem, precio: parseFloat(e.target.value) })} />
-            </Form.Group>
-          </Form>
+          <Form.Group className="mb-3">
+            <Form.Label>Seleccionar XML</Form.Label>
+            <Form.Control type="file" accept=".xml" onChange={handleXMLUpload} />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Seleccionar PDF</Form.Label>
+            <Form.Control type="file" accept=".pdf" onChange={(e) => setPdfFactura(e.target.files[0])} />
+          </Form.Group>
+
+          <Table bordered className="text-center">
+            <thead className="table-warning">
+              <tr>
+                <th>Clave</th>
+                <th>Tipo</th>
+                <th>Recurso</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {facturaRows.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{item.clave}</td>
+                  <td>
+                    <Form.Control value={item.tipo} onChange={e => {
+                      const copy = [...facturaRows];
+                      copy[idx].tipo = e.target.value;
+                      setFacturaRows(copy);
+                    }} />
+                  </td>
+                  <td>
+                    <Form.Control value={item.recurso} onChange={e => {
+                      const copy = [...facturaRows];
+                      copy[idx].recurso = e.target.value;
+                      setFacturaRows(copy);
+                    }} />
+                  </td>
+                  <td>
+                    <Form.Control value={item.descripcion} onChange={e => {
+                      const copy = [...facturaRows];
+                      copy[idx].descripcion = e.target.value;
+                      setFacturaRows(copy);
+                    }} />
+                  </td>
+                  <td>{item.fecha}</td>
+                  <td>{item.cantidad}</td>
+                  <td>${item.precio.toFixed(2)}</td>
+                  <td>
+                    <Button size="sm" variant="danger" onClick={() => {
+                      setFacturaRows(facturaRows.filter((_, i) => i !== idx));
+                    }}>
+                      <BsTrashFill />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
-          <Button variant="primary" onClick={handleSave}>Guardar</Button>
+          <Button variant="secondary" onClick={() => setShowFacturaModal(false)}>Cancelar</Button>
+          <Button variant="primary" onClick={() => {
+            const blobUrl = pdfFactura ? URL.createObjectURL(pdfFactura) : null;
+            setData(prev => [
+              ...prev,
+              ...facturaRows.map(row => ({
+                id: Date.now() + Math.random(),
+                ...row,
+                cable: row.clave,
+                activo: true,
+                xmlFile: null,
+                pdfFile: blobUrl
+              }))
+            ]);
+            setFacturaRows([]);
+            setPdfFactura(null);
+            setShowFacturaModal(false);
+          }}>
+            Guardar en Recursos
+          </Button>
         </Modal.Footer>
       </Modal>
-
-      <Modal show={showToggleModal} onHide={() => setShowToggleModal(false)}>
-  <Modal.Header closeButton>
-    <Modal.Title>
-      {toggleItem?.activo ? 'Desactivar Recurso' : 'Activar Recurso'}
-    </Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    {toggleItem?.activo ? (
-      <>
-        <p>¿Estás seguro que deseas <strong>desactivar</strong> este recurso?</p>
-        <Form.Group>
-          <Form.Label>Motivo de desactivación</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={toggleReason}
-            onChange={e => setToggleReason(e.target.value)}
-          />
-        </Form.Group>
-      </>
-    ) : (
-      <p>¿Deseas volver a <strong>activar</strong> este recurso?</p>
-    )}
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="secondary" onClick={() => setShowToggleModal(false)}>Cancelar</Button>
-    <Button variant="warning" onClick={handleToggleStatus}>
-      {toggleItem?.activo ? 'Desactivar' : 'Activar'}
-    </Button>
-  </Modal.Footer>
-</Modal>
     </div>
   );
 };

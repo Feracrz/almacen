@@ -124,7 +124,7 @@ const exportPDF = () => {
       item.tipo,
       item.recurso,
       item.descripcion || '',
-  
+      item.fecha,
       item.cantidad,
       `$${item.precio.toFixed(2)}`
     ])
@@ -186,9 +186,9 @@ const handleXMLUpload = async (e) => {
       const rows = conceptosArray.map((c) => ({
         clave: c['@_ClaveProdServ'] || 'N/A',
         tipo: c['@_Unidad'] || 'N/A',
-
+        recurso: c['@_Descripcion']?.split(' ')[0] || '',
         descripcion: c['@_Descripcion'] || '',
-        Importe:  parseFloat(c['@_Importe']) || 0,
+        fecha: fecha,
         cantidad: Number(c['@_Cantidad']) || 1,
         precio: parseFloat(c['@_ValorUnitario']) || 0
       }));
@@ -261,83 +261,54 @@ const handleXMLUpload = async (e) => {
           <Table bordered className="text-center">
             <thead className="table-warning">
               <tr>
-                <th>Categoria</th>
-                <th>Recurso</th>
+                <th>Clave</th>
                 <th>Tipo</th>
+                <th>Recurso</th>
                 <th>Descripción</th>
-                <th>Unidad de medida</th>
-                <th>Precio unitario</th>
-                <th>Precio total</th>
+                <th>Fecha</th>
                 <th>Cantidad</th>
+                <th>Precio</th>
                 <th>Acción</th>
               </tr>
             </thead>
-           <tbody>
-  {facturaRows.map((item, idx) => (
-    <tr key={idx}>
-      <td>
-        <Form.Select
-          value={item.categoria || ''}
-          onChange={e => {
-            const copy = [...facturaRows];
-            copy[idx].categoria = e.target.value;
-            setFacturaRows(copy);
-          }}
-        >
-          <option value="">Seleccione...</option>
-          <option value="Papelería">Papelería</option>
-          <option value="Material de limpieza">Material de limpieza</option>
-          <option value="Insumos">Insumos de oficina</option>
-          <option value="Consumibles">Consumibles</option>
-        </Form.Select>
-      </td>
-      <td> <Form.Select
-          value={item.recurso || ''}
-          onChange={e => {
-            const copy = [...facturaRows];
-            copy[idx].categoria = e.target.value;
-            setFacturaRows(copy);
-          }}
-        >
-          <option value="">Seleccione...</option>
-          <option value="Papelería">Papelería</option>
-          <option value="Material de limpieza">Material de limpieza</option>
-          <option value="Insumos">Insumos</option>
-        </Form.Select></td>
-
-      <td>
-        <Form.Control value={item.descripcion} onChange={e => {
-          const copy = [...facturaRows];
-          copy[idx].descripcion = e.target.value;
-          setFacturaRows(copy);
-        }} />
-      </td>
-      <td>
-        <Form.Control value={item.tipo} onChange={e => {
-          const copy = [...facturaRows];
-          copy[idx].tipo = e.target.value;
-          setFacturaRows(copy);
-        }} />
-      </td>
-       <td>${item.precio.toFixed(2)}</td>
-         <td>
-
-      </td>
-     
-     
-      
-    
-      <td>{item.cantidad}</td>
-      <td>
-        <Button size="sm" variant="danger" onClick={() => {
-          setFacturaRows(facturaRows.filter((_, i) => i !== idx));
-        }}>
-          <BsTrashFill />
-        </Button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+            <tbody>
+              {facturaRows.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{item.clave}</td>
+                  <td>
+                    <Form.Control value={item.tipo} onChange={e => {
+                      const copy = [...facturaRows];
+                      copy[idx].tipo = e.target.value;
+                      setFacturaRows(copy);
+                    }} />
+                  </td>
+                  <td>
+                    <Form.Control value={item.recurso} onChange={e => {
+                      const copy = [...facturaRows];
+                      copy[idx].recurso = e.target.value;
+                      setFacturaRows(copy);
+                    }} />
+                  </td>
+                  <td>
+                    <Form.Control value={item.descripcion} onChange={e => {
+                      const copy = [...facturaRows];
+                      copy[idx].descripcion = e.target.value;
+                      setFacturaRows(copy);
+                    }} />
+                  </td>
+                  <td>{item.fecha}</td>
+                  <td>{item.cantidad}</td>
+                  <td>${item.precio.toFixed(2)}</td>
+                  <td>
+                    <Button size="sm" variant="danger" onClick={() => {
+                      setFacturaRows(facturaRows.filter((_, i) => i !== idx));
+                    }}>
+                      <BsTrashFill />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </Table>
         </Modal.Body>
         <Modal.Footer>

@@ -238,30 +238,32 @@ const handleXMLUpload = async (e) => {
 
       const result = parser.parse(xmlText);
       console.log('✅ XML Parseado:', result);
-
       // Detectar el nodo Comprobante sin importar el prefijo
       const comprobanteKey = Object.keys(result).find(k => k.toLowerCase().includes('comprobante'));
       const comprobante = result[comprobanteKey];
-
+      const fechaFactura = comprobante['@_Fecha']?.substring(0, 10) || '';
+      const emisorKey = Object.keys(comprobante).find(k => k.toLowerCase().includes('emisor'));
+      const emisor = comprobante[emisorKey];
       const conceptosWrapperKey = Object.keys(comprobante).find(k => k.toLowerCase().includes('conceptos'));
       const conceptosWrapper = comprobante[conceptosWrapperKey];
-
       const conceptoKey = Object.keys(conceptosWrapper).find(k => k.toLowerCase().includes('concepto'));
       const conceptos = conceptosWrapper[conceptoKey];
       const conceptosArray = Array.isArray(conceptos) ? conceptos : [conceptos];
-
-      const fecha = comprobante['@_Fecha']?.substring(0, 10) || '';
-
+      
+      const emisorEntry = Object.entries(comprobante).find(([key]) =>
+           key.toLowerCase().includes('emisor')
+            );
+      const proveedorNombre = emisor?.['@_Nombre'] || '';
       const rows = conceptosArray.map((c) => ({
         clave: c['@_ClaveProdServ'] || 'N/A',
         tipo: c['@_Unidad'] || 'N/A',
-
         descripcion: c['@_Descripcion'] || '',
-        Importe:  parseFloat(c['@_Importe']) || 0,
+        importe: parseFloat(c['@_Importe']) || 0,
         cantidad: Number(c['@_Cantidad']) || 1,
-        valoruni: parseFloat(c['@_ValorUnitario']) || 0
+        valoruni: parseFloat(c['@_ValorUnitario']) || 0,
+        provedor: proveedorNombre,
+        fecha: fechaFactura
       }));
-
       console.log('✅ Datos extraídos:', rows);
       setFacturaRows(rows);
     } catch (error) {
@@ -327,12 +329,16 @@ const handleXMLUpload = async (e) => {
             <Form.Control type="file" accept=".pdf" onChange={(e) => setPdfFactura(e.target.files[0])} />
           </Form.Group>
 
+<div className="mb-3">
+  <strong>Proveedor:</strong> {facturaRows[0]?.provedor || 'N/A'}<br />
+  <strong>Fecha de factura:</strong> {facturaRows[0]?.fecha || 'N/A'}
+</div>
+      
           <Table bordered className="text-center">
             <thead className="table-warning">
               <tr>
                 <th>Categoria</th>
                 <th>Recurso</th>
-     
                 <th>Descripción</th>
                 <th>Unidad de medida</th>
                 <th>Precio unitario</th>

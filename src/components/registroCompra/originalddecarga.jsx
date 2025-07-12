@@ -247,6 +247,10 @@ const toggleActivo = (id) => {
         </Col>
       </Row>
 
+      <div>
+       <label htmlFor=""> Provedor</label> 
+      </div>
+
       <div className="table-responsive">
         <Table bordered hover>
           <thead className="table-primary text-center align-middle">

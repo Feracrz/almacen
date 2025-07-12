@@ -190,7 +190,7 @@ const handleXMLUpload = async (e) => {
         descripcion: c['@_Descripcion'] || '',
         Importe:  parseFloat(c['@_Importe']) || 0,
         cantidad: Number(c['@_Cantidad']) || 1,
-        precio: parseFloat(c['@_ValorUnitario']) || 0
+        valoruni: parseFloat(c['@_ValorUnitario']) || 0
       }));
 
       console.log('✅ Datos extraídos:', rows);
@@ -263,7 +263,7 @@ const handleXMLUpload = async (e) => {
               <tr>
                 <th>Categoria</th>
                 <th>Recurso</th>
-                <th>Tipo</th>
+     
                 <th>Descripción</th>
                 <th>Unidad de medida</th>
                 <th>Precio unitario</th>
@@ -305,6 +305,8 @@ const handleXMLUpload = async (e) => {
           <option value="Insumos">Insumos</option>
         </Form.Select></td>
 
+
+      
       <td>
         <Form.Control value={item.descripcion} onChange={e => {
           const copy = [...facturaRows];
@@ -312,17 +314,24 @@ const handleXMLUpload = async (e) => {
           setFacturaRows(copy);
         }} />
       </td>
-      <td>
+
+      
+      
+       
+       <td>
         <Form.Control value={item.tipo} onChange={e => {
           const copy = [...facturaRows];
           copy[idx].tipo = e.target.value;
           setFacturaRows(copy);
         }} />
       </td>
-       <td>${item.precio.toFixed(2)}</td>
-         <td>
-
+              <td>
+${item.cantidad.toFixed(2)}
       </td>
+     <td>${item.valoruni.toFixed(2)}</td>
+ 
+         
+
      
      
       

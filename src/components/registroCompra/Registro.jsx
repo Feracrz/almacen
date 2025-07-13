@@ -311,7 +311,7 @@ const handleXMLUpload = async (e) => {
         </Col>
       </Row>
 
-      {/* Aquí tu tabla y modales previos como ya estaban */}
+      {/* Aqui mi tabla y modales */}
 <div className="table-responsive">
   <Table bordered hover>
     <thead className="table-primary text-center align-middle">
@@ -345,14 +345,11 @@ const handleXMLUpload = async (e) => {
               onChange={() => toggleRow(item.id)}
             />
           </td>
-          <td>{item.categorias}</td>
+          <td>{item.categoria}</td>
           <td>{item.recurso}</td>
           <td>{item.descripcion}</td>
           <td>{item.tipo}</td>
           <td>${item.valoruni ? item.valoruni.toFixed(2) : '0.00'}</td>
-          
-          
-         
           <td>${item.importe ? item.importe.toFixed(2) : '0.00'}</td>
           <td>{item.cantidad}</td>
           <td>{item.fecha}</td>
@@ -546,141 +543,145 @@ const handleXMLUpload = async (e) => {
 
 
       {/* Modal de Factura */}
-      <Modal size="lg" show={showFacturaModal} onHide={() => setShowFacturaModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Cargar Factura</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group className="mb-3">
-            <Form.Label>Seleccionar XML</Form.Label>
-            <Form.Control type="file" accept=".xml" onChange={handleXMLUpload} />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Seleccionar PDF</Form.Label>
-            <Form.Control type="file" accept=".pdf" onChange={(e) => setPdfFactura(e.target.files[0])} />
-          </Form.Group>
+      <Modal size="xl" show={showFacturaModal} onHide={() => setShowFacturaModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>Cargar Factura</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form.Group className="mb-3">
+      <Form.Label>Seleccionar XML <span className="text-danger">*</span></Form.Label>
+      <Form.Control
+        type="file"
+        accept=".xml"
+        onChange={handleXMLUpload}
+        isInvalid={facturaRows.length === 0}
+      />
+      <Form.Control.Feedback type="invalid">
+        Debes cargar un archivo XML válido.
+      </Form.Control.Feedback>
+    </Form.Group>
+    <Form.Group className="mb-3">
+      <Form.Label>Seleccionar PDF <span className="text-danger">*</span></Form.Label>
+      <Form.Control
+        type="file"
+        accept=".pdf"
+        onChange={(e) => setPdfFactura(e.target.files[0])}
+        isInvalid={!pdfFactura}
+      />
+      <Form.Control.Feedback type="invalid">
+        Debes cargar un archivo PDF.
+      </Form.Control.Feedback>
+    </Form.Group>
 
-<div className="mb-3">
-  <strong>Proveedor:</strong> {facturaRows[0]?.provedor || 'N/A'}<br />
-  <strong>Fecha de factura:</strong> {facturaRows[0]?.fecha || 'N/A'}
-</div>
-      
-          <Table bordered className="text-center">
-            <thead className="table-warning">
-              <tr>
-                <th>Categoria</th>
-                <th>Recurso</th>
-                <th>Descripción</th>
-                <th>Unidad de medida</th>
-                <th>Precio unitario</th>
-                <th>Precio total</th>
-                <th>Cantidad</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-           <tbody>
-  {facturaRows.map((item, idx) => (
-    <tr key={idx}>
-      <td>
-        <Form.Select
-          value={item.categoria || ''}
-          onChange={e => {
-            const copy = [...facturaRows];
-            copy[idx].categoria = e.target.value;
-            setFacturaRows(copy);
-          }}
-        >
-          <option value="">Seleccione...</option>
-          <option value="Papelería">Papelería</option>
-          <option value="Material de limpieza">Material de limpieza</option>
-          <option value="Insumos">Insumos de oficina</option>
-          <option value="Consumibles">Consumibles</option>
-        </Form.Select>
-      </td>
-      <td> <Form.Select
-  value={item.recurso || ''}
-  onChange={e => {
-    const copy = [...facturaRows];
-    copy[idx].recurso = e.target.value;
-    setFacturaRows(copy);
-  }}
->
-  <option value="">Seleccione...</option>
-  {(recursosPorCategoria[item.categoria] || []).map((recurso, i) => (
-    <option key={i} value={recurso}>{recurso}</option>
-  ))}
-</Form.Select>
-        
-        
-        </td>
+    {/* Validación visual para proveedor */}
+    <div className="mb-3">
+      <strong>Proveedor:</strong> {facturaRows[0]?.provedor || 'N/A'}<br />
+      <strong>Fecha de factura:</strong> {facturaRows[0]?.fecha || 'N/A'}
+    </div>
 
-
-      
-      <td>
-        <Form.Control value={item.descripcion} onChange={e => {
-          const copy = [...facturaRows];
-          copy[idx].descripcion = e.target.value;
-          setFacturaRows(copy);
-        }} />
-      </td>
-
-      
-      
-       
-       <td>
-        <Form.Control value={item.tipo} onChange={e => {
-          const copy = [...facturaRows];
-          copy[idx].tipo = e.target.value;
-          setFacturaRows(copy);
-        }} />
-      </td>
-              <td>
-${item.cantidad.toFixed(2)}
-      </td>
-     <td>${item.valoruni.toFixed(2)}</td>
- 
-         
-
-     
-     
-      
-    
-      <td>{item.cantidad}</td>
-      <td>
-        <Button size="sm" variant="danger" onClick={() => {
-          setFacturaRows(facturaRows.filter((_, i) => i !== idx));
-        }}>
-          <BsTrashFill />
-        </Button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-          </Table>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowFacturaModal(false)}>Cancelar</Button>
-          <Button variant="primary" onClick={() => {
-            const blobUrl = pdfFactura ? URL.createObjectURL(pdfFactura) : null;
-            setData(prev => [
-              ...prev,
-              ...facturaRows.map(row => ({
-                id: Date.now() + Math.random(),
-                ...row,
-                cable: row.clave,
-                activo: true,
-                xmlFile: null,
-                pdfFile: blobUrl
-              }))
-            ]);
-            setFacturaRows([]);
-            setPdfFactura(null);
-            setShowFacturaModal(false);
-          }}>
-            Guardar en Recursos
-          </Button>
-        </Modal.Footer>
-      </Modal>
+    <Table bordered className="text-center">
+      <thead className="table-warning">
+        <tr>
+          <th>Categoria <span className="text-danger">*</span></th>
+          <th>Recurso <span className="text-danger">*</span></th>
+          <th>Descripción</th>
+          <th>Unidad de medida</th>
+          <th>Precio unitario</th>
+          <th>Precio total</th>
+          <th>Cantidad</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {facturaRows.map((item, idx) => (
+          <tr key={idx}>
+            <td>
+              <Form.Select
+                value={item.categoria || ''}
+                onChange={e => {
+                  const copy = [...facturaRows];
+                  copy[idx].categoria = e.target.value;
+                  setFacturaRows(copy);
+                }}
+                isInvalid={!item.categoria}
+              >
+                <option value="">Seleccione...</option>
+                {Object.keys(recursosPorCategoria).map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </Form.Select>
+            </td>
+            <td>
+              <Form.Select
+                value={item.recurso || ''}
+                onChange={e => {
+                  const copy = [...facturaRows];
+                  copy[idx].recurso = e.target.value;
+                  setFacturaRows(copy);
+                }}
+                isInvalid={!item.recurso}
+              >
+                <option value="">Seleccione...</option>
+                {(recursosPorCategoria[item.categoria] || []).map((recurso, i) => (
+                  <option key={i} value={recurso}>{recurso}</option>
+                ))}
+              </Form.Select>
+            </td>
+            <td><Form.Control value={item.descripcion} onChange={e => {
+              const copy = [...facturaRows];
+              copy[idx].descripcion = e.target.value;
+              setFacturaRows(copy);
+            }} /></td>
+            <td><Form.Control value={item.tipo} onChange={e => {
+              const copy = [...facturaRows];
+              copy[idx].tipo = e.target.value;
+              setFacturaRows(copy);
+            }} /></td>
+            <td>${item.valoruni.toFixed(2)}</td>
+            <td>${item.cantidad.toFixed(2)}</td>
+            <td>{item.cantidad}</td>
+            <td>
+              <Button size="sm" variant="danger" onClick={() => {
+                setFacturaRows(facturaRows.filter((_, i) => i !== idx));
+              }}>
+                <BsTrashFill />
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowFacturaModal(false)}>Cancelar</Button>
+    <Button
+      variant="primary"
+      onClick={() => {
+        if (!pdfFactura || facturaRows.length === 0 || facturaRows.some(r => !r.categoria || !r.recurso)) {
+          alert('Por favor completa todos los campos obligatorios (XML, PDF, Categoría, Recurso).');
+          return;
+        }
+        const blobUrl = pdfFactura ? URL.createObjectURL(pdfFactura) : null;
+        setData(prev => [
+          ...prev,
+          ...facturaRows.map(row => ({
+            id: Date.now() + Math.random(),
+            ...row,
+            cable: row.clave,
+            activo: true,
+            xmlFile: 'cargado',
+            pdfFile: blobUrl
+          }))
+        ]);
+        setFacturaRows([]);
+        setPdfFactura(null);
+        setShowFacturaModal(false);
+      }}
+    >
+      Guardar en Recursos
+    </Button>
+  </Modal.Footer>
+</Modal>
     </div>
   );
 };

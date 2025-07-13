@@ -370,6 +370,103 @@ const Registro = () => {
           )}
         </tbody>
       </Table>
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>{editingItem?.id ? 'Editar Recurso' : 'Agregar Recurso'}</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form>
+      <Form.Group className="mb-2">
+        <Form.Label>Cable</Form.Label>
+        <Form.Control
+          value={editingItem?.cable || ''}
+          onChange={e => setEditingItem({ ...editingItem, cable: e.target.value })}
+        />
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label>Tipo</Form.Label>
+        <Form.Control
+          value={editingItem?.tipo || ''}
+          onChange={e => setEditingItem({ ...editingItem, tipo: e.target.value })}
+        />
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label>Recurso</Form.Label>
+        <Form.Control
+          value={editingItem?.recurso || ''}
+          onChange={e => setEditingItem({ ...editingItem, recurso: e.target.value })}
+        />
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label>Descripción</Form.Label>
+        <Form.Control
+          value={editingItem?.descripcion || ''}
+          onChange={e => setEditingItem({ ...editingItem, descripcion: e.target.value })}
+        />
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label>Fecha</Form.Label>
+        <Form.Control
+          type="date"
+          value={editingItem?.fecha || ''}
+          onChange={e => setEditingItem({ ...editingItem, fecha: e.target.value })}
+        />
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label>Cantidad</Form.Label>
+        <Form.Control
+          type="number"
+          value={editingItem?.cantidad || ''}
+          onChange={e => setEditingItem({ ...editingItem, cantidad: Number(e.target.value) })}
+        />
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label>Precio</Form.Label>
+        <Form.Control
+          type="number"
+          value={editingItem?.precio || ''}
+          onChange={e => setEditingItem({ ...editingItem, precio: parseFloat(e.target.value) })}
+        />
+      </Form.Group>
+    </Form>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
+    <Button variant="primary" onClick={handleSave}>Guardar</Button>
+  </Modal.Footer>
+</Modal>
+
+<Modal show={showToggleModal} onHide={() => setShowToggleModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>
+      {toggleItem?.activo ? 'Desactivar Recurso' : 'Activar Recurso'}
+    </Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    {toggleItem?.activo ? (
+      <>
+        <p>¿Estás seguro que deseas <strong>desactivar</strong> este recurso?</p>
+        <Form.Group className="mb-2">
+          <Form.Label>Motivo de desactivación</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={3}
+            value={toggleReason}
+            onChange={e => setToggleReason(e.target.value)}
+          />
+        </Form.Group>
+      </>
+    ) : (
+      <p>¿Deseas volver a <strong>activar</strong> este recurso?</p>
+    )}
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowToggleModal(false)}>Cancelar</Button>
+    <Button variant="warning" onClick={handleToggleStatus}>
+      {toggleItem?.activo ? 'Desactivar' : 'Activar'}
+    </Button>
+  </Modal.Footer>
+</Modal>
     </div>
   );
 };

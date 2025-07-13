@@ -13,10 +13,10 @@ const App = () => {
         return <div className="p-4">
         <Panel/>
         </div>;
-      case "Registro de Compra":
+      case "Almacen e Inventario":
         return (
           <div className="p-4">
-            <h2>Inventario</h2>
+            <h2>Almacen e Inventario</h2>
             <Registro />
           </div>
         );

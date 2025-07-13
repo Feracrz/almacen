@@ -193,7 +193,6 @@ const exportPDF = () => {
       item.tipo,
       item.recurso,
       item.descripcion || '',
-  
       item.cantidad,
       `$${item.precio.toFixed(2)}`
     ])
@@ -255,7 +254,7 @@ const handleXMLUpload = async (e) => {
             );
       const proveedorNombre = emisor?.['@_Nombre'] || '';
       const rows = conceptosArray.map((c) => ({
-        clave: c['@_ClaveProdServ'] || 'N/A',
+  
         tipo: c['@_Unidad'] || 'N/A',
         descripcion: c['@_Descripcion'] || '',
         importe: parseFloat(c['@_Importe']) || 0,
@@ -313,6 +312,238 @@ const handleXMLUpload = async (e) => {
       </Row>
 
       {/* Aquí tu tabla y modales previos como ya estaban */}
+<div className="table-responsive">
+  <Table bordered hover>
+    <thead className="table-primary text-center align-middle">
+      <tr>
+        <th>
+          <Form.Check
+            type="checkbox"
+            checked={selectAll}
+            onChange={e => handleSelectAll(e.target.checked)}
+          />
+        </th>
+        <th>Categoria</th>
+        <th>Recurso</th>    
+        <th>Descripción</th>
+        <th>Unidad de medida</th>
+        <th>Precio unitario</th>
+        <th>Precio total</th>
+        <th>Cantidad</th>
+        <th>Fecha</th>
+        <th>Estatus</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody className="text-center align-middle">
+      {filteredData.map(item => (
+        <tr key={item.id}>
+          <td>
+            <Form.Check
+              type="checkbox"
+              checked={selectedItems.includes(item.id)}
+              onChange={() => toggleRow(item.id)}
+            />
+          </td>
+          <td>{item.categorias}</td>
+          <td>{item.recurso}</td>
+          <td>{item.descripcion}</td>
+          <td>{item.tipo}</td>
+          <td>${item.valoruni ? item.valoruni.toFixed(2) : '0.00'}</td>
+          
+          
+         
+          <td>${item.importe ? item.importe.toFixed(2) : '0.00'}</td>
+          <td>{item.cantidad}</td>
+          <td>{item.fecha}</td>
+           <td>
+            <span
+              style={{
+                color: '#fff',
+                backgroundColor: item.activo ? '#f9b91b' : '#a8a8a8',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                fontWeight: 'bold',
+                display: 'inline-block',
+                minWidth: '80px',
+                textAlign: 'center'
+              }}
+            >
+              {item.activo ? 'Activo' : 'Inactivo'}
+            </span>
+          </td>
+          <td className="d-flex flex-column gap-1 align-items-center">
+            <Button size="sm" variant="dark" onClick={() => handleEdit(item)}>
+              <BsPencilFill />
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline-danger"
+              onClick={() => handleDelete(item.id)}
+              style={{ color: '#e52122', borderColor: '#e52122' }}
+            >
+              <BsTrashFill />
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline-warning"
+              onClick={() => {
+                setToggleItem(item);
+                setShowToggleModal(true);
+              }}
+              style={{ color: '#ee722d', borderColor: '#ee722d' }}
+            >
+              <BsSlashCircle />
+            </Button>
+
+            {/* Botón o input para XML */}
+            {!item.xmlFile ? (
+              <Form.Group className="mb-1">
+                <Form.Control
+                  type="file"
+                  accept=".xml"
+                  onChange={e => handleFileUpload(item.id, 'xml', e.target.files[0])}
+                  size="sm"
+                />
+              </Form.Group>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline-primary"
+                href={item.xmlFile}
+                download={`archivo-${item.id}.xml`}
+                title="Descargar XML"
+              >
+                <BsFileEarmarkCodeFill />
+              </Button>
+            )}
+
+            {/* Botón o input para PDF */}
+            {!item.pdfFile ? (
+              <Form.Group className="mb-1">
+                <Form.Control
+                  type="file"
+                  accept=".pdf"
+                  onChange={e => handleFileUpload(item.id, 'pdf', e.target.files[0])}
+                  size="sm"
+                />
+              </Form.Group>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline-danger"
+                href={item.pdfFile}
+                download={`archivo-${item.id}.pdf`}
+                title="Descargar PDF"
+              >
+                <BsFileEarmarkPdfFill />
+              </Button>
+            )}
+          </td>
+        </tr>
+      ))}
+      {filteredData.length === 0 && (
+        <tr>
+          <td colSpan={10} className="text-center py-4">
+            No hay registros.
+          </td>
+        </tr>
+      )}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>{editingItem?.id ? 'Editar Recurso' : 'Agregar Recurso'}</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form>
+      <Form.Group className="mb-2">
+        
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label>Categoria</Form.Label>
+        <Form.Control
+          value={editingItem?.categoria || ''}
+          onChange={e => setEditingItem({ ...editingItem, tipo: e.target.value })}
+        />
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label>Recurso</Form.Label>
+        <Form.Control
+          value={editingItem?.recurso || ''}
+          onChange={e => setEditingItem({ ...editingItem, recurso: e.target.value })}
+        />
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label>Descripción</Form.Label>
+        <Form.Control
+          value={editingItem?.descripcion || ''}
+          onChange={e => setEditingItem({ ...editingItem, descripcion: e.target.value })}
+        />
+      </Form.Group>
+    </Form>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
+    <Button variant="primary" onClick={handleSave}>Guardar</Button>
+  </Modal.Footer>
+</Modal>
+
+<Modal show={showToggleModal} onHide={() => setShowToggleModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>
+      {toggleItem?.activo ? 'Desactivar Recurso' : 'Activar Recurso'}
+    </Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    {toggleItem?.activo ? (
+      <>
+        <p>¿Estás seguro que deseas <strong>desactivar</strong> este recurso?</p>
+        <Form.Group className="mb-2">
+          <Form.Label>Motivo de desactivación</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={3}
+            value={toggleReason}
+            onChange={e => setToggleReason(e.target.value)}
+          />
+        </Form.Group>
+      </>
+    ) : (
+      <p>¿Deseas volver a <strong>activar</strong> este recurso?</p>
+    )}
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowToggleModal(false)}>Cancelar</Button>
+    <Button variant="warning" onClick={handleToggleStatus}>
+      {toggleItem?.activo ? 'Desactivar' : 'Activar'}
+    </Button>
+  </Modal.Footer>
+</Modal>
+    </tbody>
+  </Table>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       {/* Modal de Factura */}
       <Modal size="lg" show={showFacturaModal} onHide={() => setShowFacturaModal(false)}>

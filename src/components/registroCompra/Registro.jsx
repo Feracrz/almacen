@@ -98,6 +98,7 @@ const Registro = () => {
   const [showFacturaModal, setShowFacturaModal] = useState(false);
   const [facturaRows, setFacturaRows] = useState([]);
   const [pdfFactura, setPdfFactura] = useState(null);
+  const [toggleReasonError, setToggleReasonError] = useState(false);// error de  validacion para  desactivacion 
   //buscadores
   const filteredData = data.filter(item => {
   const matchesSearch =
@@ -201,20 +202,32 @@ const handlePageChange = (pageNumber) => {
 
 const exportPDF = () => {
   const exportData = getSelectedOrFilteredData();
+
+  if (exportData.length === 0) {
+    alert('No hay datos para exportar.');
+    return;
+  }
+
   const doc = new jsPDF();
   doc.text('Listado de Recursos', 14, 10);
-  doc.autoTable({
+
+  autoTable(doc, {
     startY: 20,
-    head: [['Cable', 'Tipo', 'Recurso', 'Descripción', 'Fecha', 'Cantidad', 'Precio']],
+    head: [['Categoría', 'Recurso', 'Descripción', 'Unidad', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Fecha']],
     body: exportData.map(item => [
-      item.cable || '',
-      item.tipo,
-      item.recurso,
+      item.categoria || '',
+      item.recurso || '',
       item.descripcion || '',
-      item.cantidad,
-      `$${item.precio.toFixed(2)}`
-    ])
+      item.tipo || '',
+      item.cantidad || 0,
+      `$${(item.valoruni || 0).toFixed(2)}`,
+      `$${(item.importe || 0).toFixed(2)}`,
+      item.fecha || ''
+    ]),
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [41, 128, 185] }
   });
+
   doc.save('recursos.pdf');
 };
 const handleFileUpload = (id, type, file) => {
@@ -226,19 +239,24 @@ const handleFileUpload = (id, type, file) => {
   );
 };
 
-  const handleToggleStatus = () => {
-    if (!toggleItem) return;
-    setData(prev =>
-      prev.map(item =>
-        item.id === toggleItem.id
-          ? { ...item, activo: !item.activo, motivo: toggleReason }
-          : item
-      )
-    );
-    setShowToggleModal(false);
-    setToggleItem(null);
-    setToggleReason('');
-  };
+const handleToggleStatus = () => {
+  if (toggleItem?.activo && toggleReason.trim() === '') {
+    setToggleReasonError(true);
+    return;
+  }
+
+  setData(prev =>
+    prev.map(item =>
+      item.id === toggleItem.id
+        ? { ...item, activo: !item.activo, motivo: toggleReason }
+        : item
+    )
+  );
+  setShowToggleModal(false);
+  setToggleItem(null);
+  setToggleReason('');
+  setToggleReasonError(false); // Reset error
+};
 const handleXMLUpload = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -359,7 +377,7 @@ const handleXMLUpload = async (e) => {
       </Form.Control.Feedback>
     </Form.Group>
 
-    {/* Validación visual para proveedor */}
+    {/* nombre del provedor y  fecha de la  factura  */}
     <div className="mb-3">
       <strong>Proveedor:</strong> {facturaRows[0]?.provedor || 'N/A'}<br />
       <strong>Fecha de factura:</strong> {facturaRows[0]?.fecha || 'N/A'}
@@ -375,7 +393,7 @@ const handleXMLUpload = async (e) => {
           <th>Precio unitario</th>
           <th>Precio total</th>
           <th>Cantidad</th>
-          <th>Acción</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -469,7 +487,7 @@ const handleXMLUpload = async (e) => {
   </Modal.Footer>
 </Modal>
 
-      {/* Aqui mi tabla y modales */}
+{/* Aqui mi tabla y modales ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/}
 <div className="table-responsive">
   <Table bordered hover>
     <thead className="table-primary text-center align-middle">
@@ -495,7 +513,7 @@ const handleXMLUpload = async (e) => {
     </thead>
     <tbody className="text-center align-middle">
      {paginatedData.map(item => (
-        <tr >
+        <tr key={item.id}>
           <td>
             <Form.Check
               type="checkbox"
@@ -606,41 +624,73 @@ const handleXMLUpload = async (e) => {
           </td>
         </tr>
       )}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+<Modal show={showModal} onHide={() => setShowModal(false)}>
   <Modal.Header closeButton>
     <Modal.Title>{editingItem?.id ? 'Editar Recurso' : 'Agregar Recurso'}</Modal.Title>
   </Modal.Header>
   <Modal.Body>
     <Form>
+      {/* Categoría */}
       <Form.Group className="mb-2">
-        
-      </Form.Group>
-      <Form.Group className="mb-2">
-        <Form.Label>Categoria</Form.Label>
-        <Form.Control
+        <Form.Label>Categoría <span className="text-danger">*</span></Form.Label>
+        <Form.Select
           value={editingItem?.categoria || ''}
-          onChange={e => setEditingItem({ ...editingItem, tipo: e.target.value })}
-        />
+          onChange={e => {
+            const categoria = e.target.value;
+            setEditingItem({
+              ...editingItem,
+              categoria,
+              recurso: '', // Reinicia recurso al cambiar categoría
+            });
+          }}
+          isInvalid={!editingItem?.categoria}
+        >
+          <option value="">Seleccione una categoría</option>
+          {Object.keys(recursosPorCategoria).map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </Form.Select>
+        <Form.Control.Feedback type="invalid">
+          La categoría es obligatoria.
+        </Form.Control.Feedback>
       </Form.Group>
+
+      {/* Recurso */}
       <Form.Group className="mb-2">
-        <Form.Label>Recurso</Form.Label>
-        <Form.Control
+        <Form.Label>Recurso <span className="text-danger">*</span></Form.Label>
+        <Form.Select
           value={editingItem?.recurso || ''}
           onChange={e => setEditingItem({ ...editingItem, recurso: e.target.value })}
-        />
+          isInvalid={!editingItem?.recurso}
+          disabled={!editingItem?.categoria}
+        >
+          <option value="">Seleccione un recurso</option>
+          {(recursosPorCategoria[editingItem?.categoria] || []).map((recurso, i) => (
+            <option key={i} value={recurso}>{recurso}</option>
+          ))}
+        </Form.Select>
+        <Form.Control.Feedback type="invalid">
+          El recurso es obligatorio.
+        </Form.Control.Feedback>
       </Form.Group>
-      <Form.Group className="mb-2">
-        <Form.Label>Descripción</Form.Label>
-        <Form.Control
-          value={editingItem?.descripcion || ''}
-          onChange={e => setEditingItem({ ...editingItem, descripcion: e.target.value })}
-        />
-      </Form.Group>
+
+      
     </Form>
   </Modal.Body>
   <Modal.Footer>
     <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
-    <Button variant="primary" onClick={handleSave}>Guardar</Button>
+    <Button
+      variant="primary"
+      onClick={() => {
+        if (!editingItem?.categoria || !editingItem?.recurso) {
+          alert('Debes completar los campos obligatorios.');
+          return;
+        }
+        handleSave();
+      }}
+    >
+      Guardar
+    </Button>
   </Modal.Footer>
 </Modal>
 
@@ -655,14 +705,21 @@ const handleXMLUpload = async (e) => {
       <>
         <p>¿Estás seguro que deseas <strong>desactivar</strong> este recurso?</p>
         <Form.Group className="mb-2">
-          <Form.Label>Motivo de desactivación</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={toggleReason}
-            onChange={e => setToggleReason(e.target.value)}
-          />
-        </Form.Group>
+  <Form.Label>Motivo de desactivación <span className="text-danger">*</span></Form.Label>
+  <Form.Control
+    as="textarea"
+    rows={3}
+    value={toggleReason}
+    onChange={e => {
+      setToggleReason(e.target.value);
+      if (e.target.value.trim() !== '') setToggleReasonError(false);
+    }}
+    isInvalid={toggleReasonError}
+  />
+  <Form.Control.Feedback type="invalid">
+    Este campo es obligatorio.
+  </Form.Control.Feedback>
+</Form.Group>
       </>
     ) : (
       <p>¿Deseas volver a <strong>activar</strong> este recurso?</p>

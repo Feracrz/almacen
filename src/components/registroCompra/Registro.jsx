@@ -100,23 +100,26 @@ const Registro = () => {
   const [pdfFactura, setPdfFactura] = useState(null);
   const [toggleReasonError, setToggleReasonError] = useState(false);// error de  validacion para  desactivacion 
   //buscadores
+  const [categoriaFiltro, setCategoriaFiltro] = useState('');
+  const [recursoFiltro, setRecursoFiltro] = useState('');
   const filteredData = data.filter(item => {
-  const matchesSearch =
+  const texto = `${item.tipo} ${item.recurso} ${item.descripcion} ${item.categoria}`.toLowerCase();
+  const matchesSearch = texto.includes(search.toLowerCase());
 
-      item.tipo?.toLowerCase().includes(search.toLowerCase()) ||
-      item.recurso?.toLowerCase().includes(search.toLowerCase()) ||
-      item.descripcion?.toLowerCase().includes(search.toLowerCase());
+  const matchesCategoria = categoriaFiltro ? item.categoria === categoriaFiltro : true;
+  const matchesRecurso = recursoFiltro
+  ? item.recurso?.toLowerCase().trim() === recursoFiltro.toLowerCase().trim()
+  : true;
+  const itemDate = new Date(item.fecha);
+  const from = fechaInicio ? new Date(fechaInicio) : null;
+  const to = fechaFin ? new Date(fechaFin) : null;
 
-    const itemDate = new Date(item.fecha);
-    const from = fechaInicio ? new Date(fechaInicio) : null;
-    const to = fechaFin ? new Date(fechaFin) : null;
+  const inDateRange =
+    (!from || itemDate >= from) &&
+    (!to || itemDate <= to);
 
-    const inDateRange =
-      (!from || itemDate >= from) &&
-      (!to || itemDate <= to);
-
-    return matchesSearch && inDateRange;
-  });
+  return matchesSearch && matchesCategoria && matchesRecurso && inDateRange;
+});
 
   
 //paginacion 
@@ -316,7 +319,7 @@ const handleXMLUpload = async (e) => {
         <Col md={4}>
           <InputGroup>
             <Form.Control
-              placeholder="Buscar recurso, tipo, descripción o cable..."
+              placeholder="Buscar recurso, tipo, descripción "
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -325,6 +328,28 @@ const handleXMLUpload = async (e) => {
             </InputGroup.Text>
           </InputGroup>
         </Col>
+        <Col md={3}>
+  <Form.Select
+    value={categoriaFiltro}
+    onChange={e => setCategoriaFiltro(e.target.value)}
+  >
+    <option value="">Todas las categorías</option>
+    {Object.keys(recursosPorCategoria).map(cat => (
+      <option key={cat} value={cat}>{cat}</option>
+    ))}
+  </Form.Select>
+</Col>
+<Col md={2}>
+  <Form.Select
+  value={recursoFiltro}
+  onChange={e => setRecursoFiltro(e.target.value)}
+>
+  <option value="">Todos los recursos</option>
+  {Object.values(recursosPorCategoria).flat().map((recurso, idx) => (
+    <option key={idx} value={recurso}>{recurso}</option>
+  ))}
+</Form.Select>
+</Col>
         <Col md={3}>
           <Form.Control type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} />
         </Col>

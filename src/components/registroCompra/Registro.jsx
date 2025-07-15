@@ -216,8 +216,9 @@ const exportPDF = () => {
 
   autoTable(doc, {
     startY: 20,
-    head: [['Categoría', 'Recurso', 'Descripción', 'Unidad', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Fecha']],
+    head: [[ 'Uuid', 'Categoría', 'Recurso', 'Descripción', 'Unidad', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Fecha']],
     body: exportData.map(item => [
+      item.uuid || '', 
       item.categoria || '',
       item.recurso || '',
       item.descripcion || '',
@@ -282,6 +283,19 @@ const handleXMLUpload = async (e) => {
       const fechaFactura = comprobante['@_Fecha']?.substring(0, 10) || '';
       const emisorKey = Object.keys(comprobante).find(k => k.toLowerCase().includes('emisor'));
       const emisor = comprobante[emisorKey];
+
+
+      //Busqueda del nodo donde estan el dato de  uuid
+      const complementoKey = Object.keys(comprobante).find(k => k.toLowerCase().includes('complemento'));
+      const complemento = comprobante[complementoKey] || {};
+      //Hace la busqueda el  uuid 
+      const timbreKey = Object.keys(complemento).find(k => k.toLowerCase().includes('timbrefiscaldigital'));
+      const timbre = complemento[timbreKey] || {};
+      const uuid = timbre['@_UUID'] || ''; //----> obteniendo el  uuid
+
+
+      
+      
       const conceptosWrapperKey = Object.keys(comprobante).find(k => k.toLowerCase().includes('conceptos'));
       const conceptosWrapper = comprobante[conceptosWrapperKey];
       const conceptoKey = Object.keys(conceptosWrapper).find(k => k.toLowerCase().includes('concepto'));
@@ -293,7 +307,7 @@ const handleXMLUpload = async (e) => {
             );
       const proveedorNombre = emisor?.['@_Nombre'] || '';
       const rows = conceptosArray.map((c) => ({
-  
+        uuid: uuid, 
         tipo: c['@_Unidad'] || 'N/A',
         descripcion: c['@_Descripcion'] || '',
         importe: parseFloat(c['@_Importe']) || 0,
@@ -360,6 +374,8 @@ const handleXMLUpload = async (e) => {
           {/*<Button variant="primary" onClick={() => { setEditingItem(null); setShowModal(true); }}>
             <BsPlusLg className="me-1" /> Agregar 
           </Button>*/}
+          <Button variant='primary' >Limpiar Filtros </Button>
+
           <Button variant="secondary" onClick={() => setShowFacturaModal(true)}>
             <BsPlusLg className="me-1" /> Cargar Factura
           </Button>
@@ -405,7 +421,8 @@ const handleXMLUpload = async (e) => {
     {/* nombre del provedor y  fecha de la  factura  */}
     <div className="mb-3">
       <strong>Proveedor:</strong> {facturaRows[0]?.provedor || 'N/A'}<br />
-      <strong>Fecha de factura:</strong> {facturaRows[0]?.fecha || 'N/A'}
+      <strong>Fecha de factura:</strong> {facturaRows[0]?.fecha || 'N/A'}<br />
+      <strong>UUID: </strong> {facturaRows[0]?.uuid || 'Dato no disponible'}
     </div>
 
     <Table bordered className="text-center">
@@ -424,6 +441,7 @@ const handleXMLUpload = async (e) => {
       <tbody>
         {facturaRows.map((item, idx) => (
           <tr key={idx}>
+            
             <td>
               <Form.Select
                 value={item.categoria || ''}
@@ -524,6 +542,7 @@ const handleXMLUpload = async (e) => {
             onChange={e => handleSelectAll(e.target.checked)}
           />
         </th>
+        <th>UUID</th>
         <th>Categoria</th>
         <th>Recurso</th>    
         <th>Descripción</th>
@@ -539,12 +558,14 @@ const handleXMLUpload = async (e) => {
     <tbody className="text-center align-middle">
      {paginatedData.map(item => (
         <tr key={item.id}>
+          
           <td>
             <Form.Check
               type="checkbox"
               checked={selectedItems.includes(item.id)}
               onChange={() => toggleRow(item.id)}
             />
+            <td>{item.uuid}</td>
           </td>
           <td>{item.categoria}</td>
           <td>{item.recurso}</td>

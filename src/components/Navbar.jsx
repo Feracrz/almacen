@@ -8,10 +8,10 @@ const Navbar = ({ onSelect }) => {
 
   const menuItems = [
     { icon: "bi-house-fill", label: "Panel" },
+     //{ icon: "bi-truck", label: "Notificaciones" },
     { icon: "bi-boxes", label: "Almacen e Inventario" },
-     { icon: "bi-truck-flatbed", label: "Solicitudes" },
+    { icon: "bi-truck-flatbed", label: "Solicitudes" },
     { icon: "bi-box", label: "Validacion" },
-    //{ icon: "bi-truck", label: "Notificaciones" },
     { icon: "bi-bar-chart-line", label: "Informes" },
     { icon: "bi-gear", label: "Administración" },
     { icon: "bi-people", label: "Usuarios" },

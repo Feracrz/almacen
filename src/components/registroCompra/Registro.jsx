@@ -357,9 +357,9 @@ const handleXMLUpload = async (e) => {
           <Form.Control type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} />
         </Col>
         <Col className="d-flex gap-2 justify-content-end">
-          <Button variant="primary" onClick={() => { setEditingItem(null); setShowModal(true); }}>
-            <BsPlusLg className="me-1" /> Agregar
-          </Button>
+          {/*<Button variant="primary" onClick={() => { setEditingItem(null); setShowModal(true); }}>
+            <BsPlusLg className="me-1" /> Agregar 
+          </Button>*/}
           <Button variant="secondary" onClick={() => setShowFacturaModal(true)}>
             <BsPlusLg className="me-1" /> Cargar Factura
           </Button>

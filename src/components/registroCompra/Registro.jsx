@@ -565,8 +565,9 @@ const handleXMLUpload = async (e) => {
               checked={selectedItems.includes(item.id)}
               onChange={() => toggleRow(item.id)}
             />
-            <td>{item.uuid}</td>
           </td>
+            <td>{item.uuid}</td>
+
           <td>{item.categoria}</td>
           <td>{item.recurso}</td>
           <td>{item.descripcion}</td>

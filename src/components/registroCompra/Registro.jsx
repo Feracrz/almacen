@@ -96,16 +96,20 @@ const Registro = () => {
   const [toggleItem, setToggleItem] = useState(null);
   const [toggleReason, setToggleReason] = useState('');
   const [showFacturaModal, setShowFacturaModal] = useState(false);
+  //Validacion de factura
   const [facturaRows, setFacturaRows] = useState([]);
   const [pdfFactura, setPdfFactura] = useState(null);
-  const [toggleReasonError, setToggleReasonError] = useState(false);// error de  validacion para  desactivacion 
+  // error de  validacion para  desactivacion
+  const [toggleReasonError, setToggleReasonError] = useState(false); 
+  //valiacion de input de cantidad total
+  const [validated, setValidated] = useState(false);
   //buscadores
   const [categoriaFiltro, setCategoriaFiltro] = useState('');
   const [recursoFiltro, setRecursoFiltro] = useState('');
   const filteredData = data.filter(item => {
-  const texto = `${item.tipo} ${item.recurso} ${item.descripcion} ${item.categoria}`.toLowerCase();
+  const texto = `${item.tipo} ${item.recurso} ${item.descripcion} ${item.categoria} ${item.cantidadtotal}`.toLowerCase();
   const matchesSearch = texto.includes(search.toLowerCase());
-
+  //selects de  factura obligatorios
   const matchesCategoria = categoriaFiltro ? item.categoria === categoriaFiltro : true;
   const matchesRecurso = recursoFiltro
   ? item.recurso?.toLowerCase().trim() === recursoFiltro.toLowerCase().trim()
@@ -113,12 +117,12 @@ const Registro = () => {
   const itemDate = new Date(item.fecha);
   const from = fechaInicio ? new Date(fechaInicio) : null;
   const to = fechaFin ? new Date(fechaFin) : null;
-
   const inDateRange =
     (!from || itemDate >= from) &&
     (!to || itemDate <= to);
-
   return matchesSearch && matchesCategoria && matchesRecurso && inDateRange;
+
+  //
 });
 
   
@@ -224,6 +228,7 @@ const exportPDF = () => {
       item.descripcion || '',
       item.tipo || '',
       item.cantidad || 0,
+      item.cantidadtotal || '', 
       `$${(item.valoruni || 0).toFixed(2)}`,
       `$${(item.importe || 0).toFixed(2)}`,
       item.fecha || ''
@@ -293,9 +298,6 @@ const handleXMLUpload = async (e) => {
       const timbre = complemento[timbreKey] || {};
       const uuid = timbre['@_UUID'] || ''; //----> obteniendo el  uuid
 
-
-      
-      
       const conceptosWrapperKey = Object.keys(comprobante).find(k => k.toLowerCase().includes('conceptos'));
       const conceptosWrapper = comprobante[conceptosWrapperKey];
       const conceptoKey = Object.keys(conceptosWrapper).find(k => k.toLowerCase().includes('concepto'));
@@ -325,6 +327,25 @@ const handleXMLUpload = async (e) => {
   };
   reader.readAsText(file);
 };
+const handleSubmit = (event) => {
+    const form = event.currentTarget;
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setValidated(true);
+  }; //-------> Validacion de campo obligatorio para input de cantidad total
+
+  const handleLimpiarFiltros = () => {
+  setSearch('');
+  setCategoriaFiltro('');
+  setRecursoFiltro('');
+  setFechaInicio('');
+  setFechaFin('');
+  setCurrentPage(1);
+};
+
+
 
   return (
     <div className="container-fluid py-4">
@@ -374,13 +395,16 @@ const handleXMLUpload = async (e) => {
           {/*<Button variant="primary" onClick={() => { setEditingItem(null); setShowModal(true); }}>
             <BsPlusLg className="me-1" /> Agregar 
           </Button>*/}
-          <Button variant='primary' >Limpiar Filtros </Button>
+          <Button variant='primary' onClick={handleLimpiarFiltros}>
+            Limpiar Filtros
+          </Button>
 
           <Button variant="secondary" onClick={() => setShowFacturaModal(true)}>
             <BsPlusLg className="me-1" /> Cargar Factura
           </Button>
           <Button variant="success" onClick={exportCSV} disabled={selectedItems.length === 0}>
             <BsDownload className="me-1" /> CSV
+            
           </Button>
           <Button variant="danger" onClick={exportPDF} disabled={selectedItems.length === 0}>
             <BsDownload className="me-1" /> PDF
@@ -435,6 +459,7 @@ const handleXMLUpload = async (e) => {
           <th>Precio unitario</th>
           <th>Precio total</th>
           <th>Cantidad</th>
+          <th>Cantidad Total</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -488,6 +513,22 @@ const handleXMLUpload = async (e) => {
             <td>${item.cantidad.toFixed(2)}</td>
             <td>{item.cantidad}</td>
             <td>
+               <Form noValidate validated={validated} onSubmit={handleSubmit}>
+              <Form.Group controlId="formCantidad">  
+                  <Form.Control 
+                    type="number" 
+                    placeholder="Cantidad" 
+                    min={1} max={100} 
+                    required 
+                    value={validated}
+                    onChange={(e) => setValidated(e.target.value) } />
+                    {/*<Form.Control.Feedback type="invalid">
+                      Por favor, ingresa una cantidad válida.
+                    </Form.Control.Feedback>*/}
+                </Form.Group>
+                </Form>
+            </td>
+            <td>
               <Button size="sm" variant="danger" onClick={() => {
                 setFacturaRows(facturaRows.filter((_, i) => i !== idx));
               }}>
@@ -502,10 +543,13 @@ const handleXMLUpload = async (e) => {
   <Modal.Footer>
     <Button variant="secondary" onClick={() => setShowFacturaModal(false)}>Cancelar</Button>
     <Button
+      type="submit"
       variant="primary"
       onClick={() => {
         if (!pdfFactura || facturaRows.length === 0 || facturaRows.some(r => !r.categoria || !r.recurso)) {
-          alert('Por favor completa todos los campos obligatorios (XML, PDF, Categoría, Recurso).');
+          event.stopPropagation();
+          alert('Por favor completa todos los campos obligatorios (XML, PDF, Categoría, Recurso, Cantidad total ).');
+          setValidated(true);
           return;
         }
         const blobUrl = pdfFactura ? URL.createObjectURL(pdfFactura) : null;
@@ -517,9 +561,12 @@ const handleXMLUpload = async (e) => {
             cable: row.clave,
             activo: true,
             xmlFile: 'cargado',
+            cantidadtotal: Number(cantidadtotal),
             pdfFile: blobUrl
+            
           }))
         ]);
+        setValidated('');
         setFacturaRows([]);
         setPdfFactura(null);
         setShowFacturaModal(false);
@@ -550,6 +597,7 @@ const handleXMLUpload = async (e) => {
         <th>Precio unitario</th>
         <th>Precio total</th>
         <th>Cantidad</th>
+        <th>Cantidad Total</th>
         <th>Fecha</th>
         <th>Estatus</th>
         <th>Acciones</th>
@@ -575,6 +623,7 @@ const handleXMLUpload = async (e) => {
           <td>${item.valoruni ? item.valoruni.toFixed(2) : '0.00'}</td>
           <td>${item.importe ? item.importe.toFixed(2) : '0.00'}</td>
           <td>{item.cantidad}</td>
+          <td>{item.cantidadtotal} </td>
           <td>{item.fecha}</td>
            <td>
             <span

@@ -519,9 +519,14 @@ const handleSubmit = (event) => {
                     type="number" 
                     placeholder="Cantidad" 
                     min={1} max={100} 
-                    required 
-                    value={validated}
-                    onChange={(e) => setValidated(e.target.value) } />
+                required
+    value={item.cantidadtotal || ''} 
+    onChange={(e) => {
+      const copy = [...facturaRows];
+      copy[idx].cantidadtotal = Number(e.target.value);
+      setFacturaRows(copy);
+    }} 
+  />
                     {/*<Form.Control.Feedback type="invalid">
                       Por favor, ingresa una cantidad válida.
                     </Form.Control.Feedback>*/}
@@ -561,7 +566,7 @@ const handleSubmit = (event) => {
             cable: row.clave,
             activo: true,
             xmlFile: 'cargado',
-            cantidadtotal: Number(cantidadtotal),
+            cantidadtotal: row.cantidadtotal || 0,
             pdfFile: blobUrl
             
           }))

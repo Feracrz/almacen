@@ -1,7 +1,156 @@
+import React from 'react';
+import { Table, Button } from 'react-bootstrap';
+import { BsDownload, BsEye } from 'react-icons/bs';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+const exportarPDF = (solicitud) => {
+  const doc = new jsPDF();
+  doc.text("Solicitud de Recursos", 14, 10);
+  doc.text(`Descripción: ${solicitud.descripcion}, 14, 20`);
+  doc.text(`Fecha: ${solicitud.fecha}, 14, 30`);
+  doc.autoTable({
+    startY: 40,
+    head: [["Categoría", "Recurso", "Cantidad"]],
+    body: solicitud.recursos.map(r => [r.categoria, r.recurso, r.cantidad])
+  });
+  doc.save("solicitud.pdf");
+};
+
+const TablaSolicitudes = ({ solicitudes }) => (
+  <Table bordered hover className="text-center">
+    <thead>
+      <tr>
+        <th>Solicitud/Descrición</th>
+        
+        <th>Fecha</th>
+        <th>Estatus</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {solicitudes.map((sol, idx) => (
+        <tr key={idx}>
+         
+          <td>
+           
+                <strong>Solicitud  # para defenir </strong>
+          </td>
+          <td>{sol.fecha}</td>
+          <td>{sol.estatus}</td>
+          <td>
+            <Button size="sm" variant="outline-danger" onClick={() => exportarPDF(sol)}><BsDownload /></Button>{' '}
+            <Button size="sm" variant="outline-info" href="/ver-solicitud.html" target="_blank"><BsEye /></Button>
+            <Button 
+  size="sm" 
+  variant="outline-info" 
+  onClick={() => {
+    const encoded = encodeURIComponent(JSON.stringify(sol));
+    window.open(`/ver-solicitud.html?data=${encoded}`, '_blank');
+  }}
+>
+  <BsEye />
+</Button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+);
+export default TablaSolicitudes;  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React from 'react';
+import { Table, Button } from 'react-bootstrap';
+import { BsDownload, BsEye } from 'react-icons/bs';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+const exportarPDF = (solicitud) => {
+  const doc = new jsPDF();
+  doc.text("Solicitud de Recursos", 14, 10);
+  doc.text(`Descripción: ${solicitud.descripcion}`, 14, 20);
+  doc.text(`Fecha: ${solicitud.fecha}`, 14, 30);
+  doc.autoTable({
+    head: [['Categoría', 'Recurso', 'Cantidad']],
+    body: solicitud.recursos.map(r => [r.categoria, r.recurso, r.cantidad])
+  });
+  doc.save(`Solicitud_${solicitud.fecha}.pdf`);
+};
+
+const TablaSolicitudes = ({ solicitudes }) => {
+  return (
+    <Table striped bordered>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Fecha</th>
+          <th>Estatus</th>
+          <th>Recursos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {solicitudes.map((sol, idx) => (
+          <tr key={idx}>
+            <td>{sol.descripcion}</td>
+            <td>{sol.fecha}</td>
+            <td>{sol.estatus}</td>
+            <td>
+              <ul className="mb-0">
+                {sol.recursos.map((r, i) => (
+                  <li key={i}>{r.categoria} - {r.recurso} ({r.cantidad})</li>
+                ))}
+              </ul>
+            </td>
+                   <td>
+                        <Button size="sm" variant="outline-danger" onClick={() => exportarPDF(sol)}><BsDownload /></Button>{' '}
+                       
+                        <Button 
+              size="sm" 
+              variant="outline-info" 
+              onClick={() => {
+                const encoded = encodeURIComponent(JSON.stringify(sol));
+                window.open(`/ver-solicitud.html?data=${encoded}`, '_blank');
+              }}
+            >
+              <BsEye />
+            </Button>
+                      </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  );
+};
+
+export default TablaSolicitudes;
+
+
+
+
 import React, { useState } from 'react';
-import { Modal, Button, Form, InputGroup, Row, Col, Table, Alert } from 'react-bootstrap';
+import { Modal, Button, Form, InputGroup, Row, Col, Table } from 'react-bootstrap';
 import { BsSearch, BsPlusLg, BsTrash } from 'react-icons/bs';
-import TablaSolicitudes from './tablaSolicitudes';
+import TablaSolicitudes from './TablaSolicitudes';
 
 const recursosPorCategoria = {
   "Papelería": [
@@ -83,15 +232,10 @@ const Solicitudes = () => {
   const [cantidad, setCantidad] = useState(1);
   const [solicitudTemp, setSolicitudTemp] = useState([]);
   const [solicitudes, setSolicitudes] = useState([]);
-  const [error, setError] = useState(''); // <-- estado para error
 
-  // Agregar recurso temporal con validación
+  // Agregar recurso temporal
   const handleAgregar = () => {
-    if (!categoria || !recurso || cantidad < 1) {
-      setError('Todos los campos son obligatorios.');
-      return;
-    }
-    setError(''); // limpiar error
+    if (!categoria || !recurso || cantidad < 1) return;
     setSolicitudTemp([...solicitudTemp, { categoria, recurso, cantidad }]);
     setRecurso('');
     setCantidad(1);
@@ -101,6 +245,7 @@ const Solicitudes = () => {
   const handleEdit = (index, field, value) => {
     const updated = [...solicitudTemp];
     updated[index][field] = value;
+    // Si cambia la categoría, resetear el recurso
     if (field === 'categoria') {
       updated[index].recurso = '';
     }
@@ -114,11 +259,6 @@ const Solicitudes = () => {
 
   // Guardar solicitud completa
   const handleGuardarSolicitud = () => {
-    if (solicitudTemp.length === 0) {
-      setError('Debes agregar al menos un recurso antes de guardar.');
-      return;
-    }
-    setError('');
     const nueva = {
       descripcion: `Solicitud de ${solicitudTemp.length} recursos`,
       fecha: new Date().toISOString().substring(0, 10),
@@ -153,17 +293,11 @@ const Solicitudes = () => {
           <Modal.Title>Nueva Solicitud</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {error && <Alert variant="danger">{error}</Alert>} {/* <-- mostramos error */}
-
           <Row className="mb-3">
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Categoría</Form.Label>
-                <Form.Select 
-                  value={categoria} 
-                  onChange={e => { setCategoria(e.target.value); setRecurso(''); }} 
-                  required
-                >
+                <Form.Select value={categoria} onChange={e => { setCategoria(e.target.value); setRecurso(''); }}>
                   <option value="">Seleccione</option>
                   {Object.keys(recursosPorCategoria).map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
                 </Form.Select>
@@ -172,12 +306,7 @@ const Solicitudes = () => {
             <Col md={5}>
               <Form.Group>
                 <Form.Label>Recurso</Form.Label>
-                <Form.Select 
-                  value={recurso} 
-                  onChange={e => setRecurso(e.target.value)} 
-                  disabled={!categoria} 
-                  required
-                >
+                <Form.Select value={recurso} onChange={e => setRecurso(e.target.value)} disabled={!categoria}>
                   <option value="">Seleccione</option>
                   {(recursosPorCategoria[categoria] || []).map((rec, i) => <option key={i} value={rec}>{rec}</option>)}
                 </Form.Select>
@@ -186,13 +315,7 @@ const Solicitudes = () => {
             <Col md={3}>
               <Form.Group>
                 <Form.Label>Cantidad</Form.Label>
-                <Form.Control 
-                  type="number" 
-                  value={cantidad} 
-                  min={1} 
-                  onChange={e => setCantidad(Number(e.target.value))} 
-                  required
-                />
+                <Form.Control type="number" value={cantidad} min={1} onChange={e => setCantidad(Number(e.target.value))} />
               </Form.Group>
             </Col>
           </Row>
@@ -213,34 +336,19 @@ const Solicitudes = () => {
                 {solicitudTemp.map((r, i) => (
                   <tr key={i}>
                     <td>
-                      <Form.Select 
-                        value={r.categoria} 
-                        onChange={(e) => handleEdit(i, 'categoria', e.target.value)} 
-                        required
-                      >
+                      <Form.Select value={r.categoria} onChange={(e) => handleEdit(i, 'categoria', e.target.value)}>
                         <option value="">Seleccione</option>
                         {Object.keys(recursosPorCategoria).map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
                       </Form.Select>
                     </td>
                     <td>
-                      <Form.Select 
-                        value={r.recurso} 
-                        onChange={(e) => handleEdit(i, 'recurso', e.target.value)} 
-                        disabled={!r.categoria} 
-                        required
-                      >
+                      <Form.Select value={r.recurso} onChange={(e) => handleEdit(i, 'recurso', e.target.value)} disabled={!r.categoria}>
                         <option value="">Seleccione</option>
                         {(recursosPorCategoria[r.categoria] || []).map((rec, idx) => <option key={idx} value={rec}>{rec}</option>)}
                       </Form.Select>
                     </td>
                     <td>
-                      <Form.Control 
-                        type="number" 
-                        value={r.cantidad} 
-                        min={1} 
-                        onChange={(e) => handleEdit(i, 'cantidad', Number(e.target.value))} 
-                        required
-                      />
+                      <Form.Control type="number" value={r.cantidad} min={1} onChange={(e) => handleEdit(i, 'cantidad', Number(e.target.value))} />
                     </td>
                     <td className="text-center">
                       <Button variant="danger" size="sm" onClick={() => handleDelete(i)}>

@@ -180,7 +180,7 @@ const Solicitudes = () => {
         <Modal.Body>
           <Form.Group className="mb-2">
             <Form.Label>Categoría</Form.Label>
-            <Form.Select value={categoria} onChange={e => { setCategoria(e.target.value); setRecurso(''); }}>
+            <Form.Select value={categoria} onChange={e => { setCategoria(e.target.value); setRecurso(''); }} requiered>
               <option value="">Seleccione</option>
               {Object.keys(recursosPorCategoria).map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
             </Form.Select>
@@ -188,7 +188,7 @@ const Solicitudes = () => {
 
           <Form.Group className="mb-2">
             <Form.Label>Recurso</Form.Label>
-            <Form.Select value={recurso} onChange={e => setRecurso(e.target.value)} disabled={!categoria}>
+            <Form.Select value={recurso} onChange={e => setRecurso(e.target.value)} disabled={!categoria} requiered>
               <option value="">Seleccione</option>
               {(recursosPorCategoria[categoria] || []).map((rec, i) => <option key={i} value={rec}>{rec}</option>)}
             </Form.Select>
@@ -197,7 +197,7 @@ const Solicitudes = () => {
 
           <Form.Group className="mb-2">
             <Form.Label>Cantidad</Form.Label>
-            <Form.Control type="number" value={cantidad} min={1} onChange={e => setCantidad(Number(e.target.value))} />
+            <Form.Control type="number" value={cantidad} min={1} onChange={e => setCantidad(Number(e.target.value))} requiered />
           </Form.Group>
 
           <Button onClick={handleAgregar}>Agregar a solicitud</Button>

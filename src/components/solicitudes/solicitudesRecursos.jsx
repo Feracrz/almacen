@@ -63,7 +63,7 @@ const Solicitudes = () => {
 
   return (
     <div className="container py-4">
-      <h4>Solicitudes</h4>
+      <h4>Solicitudes/Historial</h4>
       <Row className="g-3 mb-3">
         <Col md={4}>
           <InputGroup>
@@ -92,6 +92,7 @@ const Solicitudes = () => {
             <tr key={idx}>
               <td>{sol.descripcion}</td>
               <td>{sol.fecha}</td>
+              <td>Estatus</td>
               <td>{sol.estatus}</td>
               <td>
                 <Button size="sm" variant="outline-danger" onClick={() => exportarPDF(sol)}><BsDownload /></Button>{' '}

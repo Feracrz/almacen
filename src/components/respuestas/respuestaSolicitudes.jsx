@@ -13,11 +13,10 @@ const SolicitudesAsignacion = () => {
   const [cantidadesAsignar, setCantidadesAsignar] = useState({});
   const [historial, setHistorial] = useState([]);
 
-  // Paginación
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Datos iniciales
   const [solicitudes, setSolicitudes] = useState([
     { 
       id: 1, 
@@ -40,6 +39,16 @@ const SolicitudesAsignacion = () => {
         { nombre: 'Memorias USB', stock: 20, cantidadSolicitada: 5 }
       ]
     },
+    { 
+        id: 3, 
+        area: 'Devs', 
+        solicitante: 'Juan Pérez', 
+        fecha: '2025-07-22', 
+        estatus: 'Pendiente',
+        recursos: [
+          { nombre: 'lapiceros', stock: 2, cantidadSolicitada: 5 }
+        ]
+      },
   ]);
 
   // Abrir popout
@@ -96,7 +105,7 @@ const SolicitudesAsignacion = () => {
     setCantidadesAsignar(vacio);
   };
 
-  // Cancelar solicitud
+  // Cancelar todo
   const handleCancelarSolicitud = () => {
     setSolicitudes(prev =>
       prev.map(s => s.id === selectedSolicitud.id ? { ...s, estatus: 'Cancelada' } : s)
@@ -105,7 +114,7 @@ const SolicitudesAsignacion = () => {
     setShowPopout(false);
   };
 
-  // Filtrar
+  //filtrar
   const filteredSolicitudes = solicitudes.filter(s =>
     (s.area.toLowerCase().includes(search.toLowerCase()) || 
      s.solicitante.toLowerCase().includes(search.toLowerCase())) &&
@@ -113,7 +122,7 @@ const SolicitudesAsignacion = () => {
     (!fechaFin || s.fecha <= fechaFin)
   );
 
-  // Paginación
+  //paginación
   const totalPages = Math.ceil(filteredSolicitudes.length / itemsPerPage);
   const currentSolicitudes = filteredSolicitudes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -137,7 +146,6 @@ const SolicitudesAsignacion = () => {
         </Col>
       </Row>
 
-      {/* Tabla */}
       <Table bordered hover>
         <thead className="text-center">
           <tr>
@@ -178,7 +186,7 @@ const SolicitudesAsignacion = () => {
         </tbody>
       </Table>
 
-      {/* Paginación */}
+      {/* Paginación mejorarla por a que  ya  usaba antes  */}
       <Pagination>
         {[...Array(totalPages)].map((_, idx) => (
           <Pagination.Item key={idx} active={idx + 1 === currentPage} onClick={() => setCurrentPage(idx + 1)}>
@@ -187,7 +195,7 @@ const SolicitudesAsignacion = () => {
         ))}
       </Pagination>
 
-      {/* Popout de Asignación */}
+      {/* Popout chido */}
       <Modal show={showPopout} onHide={() => setShowPopout(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detalle de Solicitud</Modal.Title>
@@ -237,7 +245,7 @@ const SolicitudesAsignacion = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Confirmar guardar */}
+      {/* confirmandign */}
       <Modal show={showConfirmGuardar} onHide={() => setShowConfirmGuardar(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Confirmar Asignación</Modal.Title>
@@ -251,7 +259,8 @@ const SolicitudesAsignacion = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal cancelar solicitud */}
+      {/* Modal cancelar solicitud para que se imprima bonito 
+       */}
       <Modal show={showCancelModal} onHide={() => setShowCancelModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Cancelar Solicitud</Modal.Title>

@@ -1,84 +1,4 @@
-import React from 'react';
-import { Table, Button } from 'react-bootstrap';
-import { BsDownload, BsEye } from 'react-icons/bs';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
-const exportarPDF = (solicitud) => {
-  const doc = new jsPDF();
-  doc.text("Solicitud de Recursos", 14, 10);
-  doc.text(`Descripción: ${solicitud.descripcion}, 14, 20`);
-  doc.text(`Fecha: ${solicitud.fecha}, 14, 30`);
-  doc.autoTable({
-    startY: 40,
-    head: [["Categoría", "Recurso", "Cantidad"]],
-    body: solicitud.recursos.map(r => [r.categoria, r.recurso, r.cantidad])
-  });
-  doc.save("solicitud.pdf");
-};
-
-const TablaSolicitudes = ({ solicitudes }) => (
-  <Table bordered hover className="text-center">
-    <thead>
-      <tr>
-        <th>Solicitud/Descrición</th>
-        
-        <th>Fecha</th>
-        <th>Estatus</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {solicitudes.map((sol, idx) => (
-        <tr key={idx}>
-         
-          <td>
-           
-                <strong>Solicitud  # para defenir </strong>
-          </td>
-          <td>{sol.fecha}</td>
-          <td>{sol.estatus}</td>
-          <td>
-            <Button size="sm" variant="outline-danger" onClick={() => exportarPDF(sol)}><BsDownload /></Button>{' '}
-            <Button size="sm" variant="outline-info" href="/ver-solicitud.html" target="_blank"><BsEye /></Button>
-            <Button 
-  size="sm" 
-  variant="outline-info" 
-  onClick={() => {
-    const encoded = encodeURIComponent(JSON.stringify(sol));
-    window.open(`/ver-solicitud.html?data=${encoded}`, '_blank');
-  }}
->
-  <BsEye />
-</Button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </Table>
-);
-export default TablaSolicitudes;  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, Button } from 'react-bootstrap';
 import { BsDownload, BsEye } from 'react-icons/bs';
 import jsPDF from 'jspdf';
@@ -97,6 +17,16 @@ const exportarPDF = (solicitud) => {
 };
 
 const TablaSolicitudes = ({ solicitudes }) => {
+  const [expandedRows, setExpandedRows] = useState([]);
+
+  const toggleExpand = (index) => {
+    if (expandedRows.includes(index)) {
+      setExpandedRows(expandedRows.filter(i => i !== index));
+    } else {
+      setExpandedRows([...expandedRows, index]);
+    }
+  };
+
   return (
     <Table striped bordered>
       <thead>
@@ -109,34 +39,205 @@ const TablaSolicitudes = ({ solicitudes }) => {
         </tr>
       </thead>
       <tbody>
-        {solicitudes.map((sol, idx) => (
-          <tr key={idx}>
-            <td>{sol.descripcion}</td>
-            <td>{sol.fecha}</td>
-            <td>{sol.estatus}</td>
-            <td>
-              <ul className="mb-0">
-                {sol.recursos.map((r, i) => (
-                  <li key={i}>{r.categoria} - {r.recurso} ({r.cantidad})</li>
-                ))}
-              </ul>
-            </td>
-                   <td>
-                        <Button size="sm" variant="outline-danger" onClick={() => exportarPDF(sol)}><BsDownload /></Button>{' '}
-                       
-                        <Button 
-              size="sm" 
-              variant="outline-info" 
-              onClick={() => {
-                const encoded = encodeURIComponent(JSON.stringify(sol));
-                window.open(`/ver-solicitud.html?data=${encoded}`, '_blank');
-              }}
-            >
-              <BsEye />
-            </Button>
-                      </td>
+        {solicitudes.map((sol, idx) => {
+          const isExpanded = expandedRows.includes(idx);
+          const recursosMostrados = isExpanded ? sol.recursos : sol.recursos.slice(0, 2);
+
+          return (
+            <tr key={idx}>
+              <td>{sol.descripcion}</td>
+              <td>{sol.fecha}</td>
+              <td>{sol.estatus}</td>
+              <td>
+                <ul className="mb-0">
+                  {recursosMostrados.map((r, i) => (
+                    <li key={i}>{r.categoria} - {r.recurso} ({r.cantidad})</li>
+                  ))}
+                </ul>
+                {sol.recursos.length > 2 && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="p-0"
+                    onClick={() => toggleExpand(idx)}
+                  >
+                    {isExpanded ? 'Ver menos' : 'Ver más'}
+                  </Button>
+                )}
+              </td>
+              <td>
+                <Button size="sm" variant="outline-danger" onClick={() => exportarPDF(sol)}><BsDownload /></Button>{' '}
+                <Button 
+                  size="sm" 
+                  variant="outline-info" 
+                  onClick={() => {
+                    const encoded = encodeURIComponent(JSON.stringify(sol));
+                    window.open(`/ver-solicitud.html?data=${encoded}`, '_blank');
+                  }}
+                >
+                  <BsEye />
+                </Button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </Table>
+  );
+};
+
+export default TablaSolicitudes;
+
+
+con html 
+
+
+
+import React, { useState } from 'react';
+import { Table, Button } from 'react-bootstrap';
+import { BsDownload, BsEye } from 'react-icons/bs';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+const exportarPDF = (solicitud) => {
+  const doc = new jsPDF();
+  doc.text("Solicitud de Recursos", 14, 10);
+  doc.text(`Descripción: ${solicitud.descripcion}`, 14, 20);
+  doc.text(`Fecha: ${solicitud.fecha}`, 14, 30);
+  doc.autoTable({
+    head: [['Categoría', 'Recurso', 'Cantidad']],
+    body: solicitud.recursos.map(r => [r.categoria, r.recurso, r.cantidad])
+  });
+  doc.save(`Solicitud_${solicitud.fecha}.pdf`);
+};
+
+const exportarHTML = (solicitud) => {
+  // Contenido HTML dinámico
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <title>Solicitud ${solicitud.fecha}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { color: #2e659e; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table, th, td { border: 1px solid #ccc; }
+        th, td { padding: 8px; text-align: left; }
+      </style>
+    </head>
+    <body>
+      <h2>Solicitud de Recursos</h2>
+      <p><strong>Descripción:</strong> ${solicitud.descripcion}</p>
+      <p><strong>Fecha:</strong> ${solicitud.fecha}</p>
+      <p><strong>Estatus:</strong> ${solicitud.estatus}</p>
+      <h3>Recursos:</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Categoría</th>
+            <th>Recurso</th>
+            <th>Cantidad</th>
           </tr>
-        ))}
+        </thead>
+        <tbody>
+          ${solicitud.recursos.map(r => `
+            <tr>
+              <td>${r.categoria}</td>
+              <td>${r.recurso}</td>
+              <td>${r.cantidad}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+
+  // Crear Blob y forzar descarga
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `Solicitud_${solicitud.fecha}.html`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const TablaSolicitudes = ({ solicitudes }) => {
+  const [expandedRows, setExpandedRows] = useState([]);
+
+  const toggleExpand = (index) => {
+    setExpandedRows(prev =>
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    );
+  };
+
+  return (
+    <Table striped bordered>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Fecha</th>
+          <th>Estatus</th>
+          <th>Recursos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {solicitudes.map((sol, idx) => {
+          const isExpanded = expandedRows.includes(idx);
+          const recursosMostrados = isExpanded ? sol.recursos : sol.recursos.slice(0, 2);
+
+          return (
+            <tr key={idx}>
+              <td>{sol.descripcion}</td>
+              <td>{sol.fecha}</td>
+              <td>{sol.estatus}</td>
+              <td>
+                <ul className="mb-0">
+                  {recursosMostrados.map((r, i) => (
+                    <li key={i}>{r.categoria} - {r.recurso} ({r.cantidad})</li>
+                  ))}
+                </ul>
+                {sol.recursos.length > 2 && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="p-0 text-primary"
+                    style={{ textDecoration: 'underline', cursor: 'pointer' }}
+                    onClick={() => toggleExpand(idx)}
+                  >
+                    {isExpanded ? 'Ver menos' : 'Ver más'}
+                  </Button>
+                )}
+              </td>
+              <td>
+                <Button size="sm" variant="outline-danger" onClick={() => exportarPDF(sol)}><BsDownload /></Button>{' '}
+                <Button 
+                  size="sm" 
+                  variant="outline-success"
+                  onClick={() => exportarHTML(sol)}
+                >
+                  HTML
+                </Button>{' '}
+                <Button 
+                  size="sm" 
+                  variant="outline-info" 
+                  onClick={() => {
+                    const encoded = encodeURIComponent(JSON.stringify(sol));
+                    window.open(`/ver-solicitud.html?data=${encoded}`, '_blank');
+                  }}
+                >
+                  <BsEye />
+                </Button>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </Table>
   );
@@ -147,227 +248,116 @@ export default TablaSolicitudes;
 
 
 
+
+
+
+
+sin  html
+
+
+
 import React, { useState } from 'react';
-import { Modal, Button, Form, InputGroup, Row, Col, Table } from 'react-bootstrap';
-import { BsSearch, BsPlusLg, BsTrash } from 'react-icons/bs';
-import TablaSolicitudes from './TablaSolicitudes';
+import { Table, Button } from 'react-bootstrap';
+import { BsDownload, BsEye, BsFileEarmarkPdf } from 'react-icons/bs';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
-const recursosPorCategoria = {
-  "Papelería": [
-    "Acuarela escolar", "Bicolor", "Block para acuarela", "Borradores de pizarrón blanco",
-    "Carpeta blanca carta tres orificios arillo en 3 pulgadas", "Carpeta blanca carta tres orificios arillo en 4 pulgadas",
-    "Carpeta blanca carta tres orificios arillo en 5 pulgadas", "Carpeta 2 orificios tamaño carta", "Carpeta 2 orificios tamaño oficio",
-    "Charola organizador", "Chinchetas", "Cinta adhesiva transparente delgada", "Cinta canela",
-    "Clip mariposa", "Clip No. 2", "Correcto lápiz", "Corrector en cinta", "Cuaderno profesional",
-    "Cúter", "Dedal", "Diurex", "Diurex 1 pulgada", "Engrapadora", "Etiquetas no.24", "Etiquetas no.25",
-    "Ficha bibliográfica", "Ficha de trabajo", "Folder tamaño carta", "Folder tamaño oficio", "Gaveta del no 14",
-    "Gaveta paleta", "Goma", "Grapas", "Lapicero tinta azul", "Lapicero tinta azul de gel", "Lapicero tinta negra",
-    "Lapicero tinta rojo", "Lápiz", "Lápiz adhesivo", "Lápiz carmín rojo", "Libreta forma francesa pasta dura",
-    "Ligas #18", "Marcador permanente negro", "Marcador permanente rojo", "Marca texto", "Notas adhesivas chico",
-    "Notas adhesivas grande", "Notas adhesivas medianas", "Papel bond tamaño carta", "Papel bond tamaño carta colores intensos",
-    "Papel bond tamaño oficio", "Papel opalina blanca t/oficio", "Papel opalina tamaña carta 125 gr",
-    "Papel opalina tamaña carta 225 gr", "Perforadora de 1 orificio", "Perforadora de 2 orificios",
-    "Perforadora de 3 orificios", "Plumón de pizarrón", "Post-it-banderitas", "Protector de hoja carta",
-    "Quita grapas", "Regla metálica 30cm", "Sacapuntas", "Sello de acuse", "Separadores de hojas 10 divisiones",
-    "Separadores de hojas 15 divisiones", "Sobre carta", "Sobre de papel (CD/DVD)", "Sobre oficio",
-    "Sujeta documentos chico 25mm", "Sujeta documentos grande 51mm", "Sujeta documentos mediano 32mm",
-    "Tijera"
-  ],
-  "Material de limpieza": [
-    "Aromatizante en aerosol", "Bolsa negra grande", "Bolsa negra mediana", "Bolsa para cesto 61x61",
-    "Cepillo de acero inoxidable", "Cloro", "Cloro para mascotas", "Desinfectante en aerosol mediano",
-    "Detergente liquido", "Escoba", "Fabulo", "Fibra", "Gel antibacterial", "Guantes de látex",
-    "Insecticida", "Jabón de cartucho", "Jabón en polvo", "Jabón para manos", "Jerga gruesa", "Lija de agua",
-    "Limpiador para piso laminados", "Líquido para vidrios", "Lustrador de muebles en aerosol", "Mechudo",
-    "Microfibras", "Mop Americano", "Pastilla desodorante", "Pino", "Sanitas"
-  ],
-  "Insumos de oficina": [
-    "Agua embotellada",
-    "Azúcar refinada",
-    "Bebida rehidratante suero",
-    "Café soluble",
-    "Charolas desechables",
-    "Cuchara cafetería",
-    "Cuchara grande",
-    "Galletas finas",
-    "Galletas surtido rico",
-    "Kleenex",
-    "Papel higiénico",
-    "Papel higiénico jumbo",
-    "Pila 9V",
-    "Pila AA",
-    "Pila AAA",
-    "Pila botón modelo CR2032",
-    "Refresco de lata coca cola",
-    "Refresco de lata sabores",
-    "Servilletas",
-    "Te",
-    "Tenedor biodegradable desechable",
-    "Toalla desinfectantes",
-    "Vasos térmicos"
-  ],
+const exportarPDF = (solicitud) => {
+  const doc = new jsPDF();
 
-  "Consumibles": [
-  "DVD-R", "Memoria USB 16gb", "Memoria USB 32gb", "Memoria USB 64gb", "Memoria USB 128gb",
-  "Ribbon idp", "Ribon holograma", "Tambor de imagen DR820", "Tambor de imagen HP 219ª",
-  "Tinta color negra", "Tinta HP 954 BK", "Tinta HP 954 C", "Tinta HP 954 M", "Tinta HP 954 Y",
-  "Tinta HP GT52 Black", "Tinta HP GT52 Cian", "Tinta HP GT52 Magenta", "Tinta HP GT52 Yellow",
-  "Tóner 410A negro", "Tóner 5272 negro", "Tóner CE 285A", "Tóner CE 310A", "Tóner CE 311A",
-  "Tóner CE 312A amarillo", "Tóner CE 313A magenta", "Tóner HP CF280A", "Tóner HP 136A", 
-  "Tóner HP 410", "Tóner HP 411", "Tóner HP 412", "Tóner HP 413", "Tóner HP 414C", "Tóner HP 414B", 
-  "Tóner HP 414M", "Tóner HP 414Y", "Tóner HP CF278A", "Tóner TK 1122", "Tóner TK 1147", 
-  "Tóner TK 1152", "Tóner TK 3102", "Tóner TK 3182", "Tóner TK 5272C", "Tóner TK 5272K", 
-  "Tóner TK 5272M", "Tóner TK 5272Y", "Tóner TK 6307", "Tóner TN 1060", "Tóner TN 850", 
-  "Tóner TN890", "Tóner W1360A", "Tóner W2020A", "Tóner W2021A", "Tóner W2023A"
-]
+  // Título
+  doc.setFontSize(18);
+  doc.text("Solicitud de Recursos", 14, 20);
+
+  // Datos generales
+  doc.setFontSize(12);
+  doc.text(`Descripción: ${solicitud.descripcion}`, 14, 35);
+  doc.text(`Fecha: ${solicitud.fecha}`, 14, 45);
+  doc.text(`Estatus: ${solicitud.estatus}`, 14, 55);
+
+  // Tabla de recursos
+  doc.autoTable({
+    startY: 70,
+    head: [['Categoría', 'Recurso', 'Cantidad']],
+    body: solicitud.recursos.map(r => [r.categoria, r.recurso, r.cantidad]),
+    theme: 'grid',
+    headStyles: { fillColor: [46, 101, 158], textColor: 255 },
+    styles: { fontSize: 11 }
+  });
+
+  // Guardar PDF
+  doc.save(`Solicitud_${solicitud.fecha}.pdf`);
 };
 
-const Solicitudes = () => {
-  const [search, setSearch] = useState('');
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [categoria, setCategoria] = useState('');
-  const [recurso, setRecurso] = useState('');
-  const [cantidad, setCantidad] = useState(1);
-  const [solicitudTemp, setSolicitudTemp] = useState([]);
-  const [solicitudes, setSolicitudes] = useState([]);
+const TablaSolicitudes = ({ solicitudes }) => {
+  const [expandedRows, setExpandedRows] = useState([]);
 
-  // Agregar recurso temporal
-  const handleAgregar = () => {
-    if (!categoria || !recurso || cantidad < 1) return;
-    setSolicitudTemp([...solicitudTemp, { categoria, recurso, cantidad }]);
-    setRecurso('');
-    setCantidad(1);
-  };
-
-  // Editar un campo en la tabla temporal
-  const handleEdit = (index, field, value) => {
-    const updated = [...solicitudTemp];
-    updated[index][field] = value;
-    // Si cambia la categoría, resetear el recurso
-    if (field === 'categoria') {
-      updated[index].recurso = '';
-    }
-    setSolicitudTemp(updated);
-  };
-
-  // Eliminar un recurso temporal
-  const handleDelete = (index) => {
-    setSolicitudTemp(solicitudTemp.filter((_, i) => i !== index));
-  };
-
-  // Guardar solicitud completa
-  const handleGuardarSolicitud = () => {
-    const nueva = {
-      descripcion: `Solicitud de ${solicitudTemp.length} recursos`,
-      fecha: new Date().toISOString().substring(0, 10),
-      estatus: 'Cancelado',
-      recursos: solicitudTemp
-    };
-    setSolicitudes([...solicitudes, nueva]);
-    setSolicitudTemp([]);
-    setShowModal(false);
+  const toggleExpand = (index) => {
+    setExpandedRows(prev =>
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    );
   };
 
   return (
-    <div className="container py-4">
-      <h4>Solicitudes/Historial</h4>
-      <Row className="g-3 mb-3">
-        <Col md={4}>
-          <InputGroup>
-            <Form.Control placeholder="Buscar" value={search} onChange={e => setSearch(e.target.value)} />
-            <InputGroup.Text><BsSearch /></InputGroup.Text>
-          </InputGroup>
-        </Col>
-        <Col md={3}><Form.Control type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} /></Col>
-        <Col md={3}><Form.Control type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} /></Col>
-        <Col md={2} className="text-end">
-          <Button variant="primary" onClick={() => setShowModal(true)}><BsPlusLg /> Agregar Solicitud</Button>
-        </Col>
-      </Row>
-      <TablaSolicitudes solicitudes={solicitudes} />
+    <Table striped bordered>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Fecha</th>
+          <th>Estatus</th>
+          <th>Recursos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {solicitudes.map((sol, idx) => {
+          const isExpanded = expandedRows.includes(idx);
+          const recursosMostrados = isExpanded ? sol.recursos : sol.recursos.slice(0, 2);
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Nueva Solicitud</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Row className="mb-3">
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label>Categoría</Form.Label>
-                <Form.Select value={categoria} onChange={e => { setCategoria(e.target.value); setRecurso(''); }}>
-                  <option value="">Seleccione</option>
-                  {Object.keys(recursosPorCategoria).map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={5}>
-              <Form.Group>
-                <Form.Label>Recurso</Form.Label>
-                <Form.Select value={recurso} onChange={e => setRecurso(e.target.value)} disabled={!categoria}>
-                  <option value="">Seleccione</option>
-                  {(recursosPorCategoria[categoria] || []).map((rec, i) => <option key={i} value={rec}>{rec}</option>)}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label>Cantidad</Form.Label>
-                <Form.Control type="number" value={cantidad} min={1} onChange={e => setCantidad(Number(e.target.value))} />
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Button onClick={handleAgregar} className="mb-3">Agregar a solicitud</Button>
-
-          {solicitudTemp.length > 0 && (
-            <Table size="sm" bordered>
-              <thead>
-                <tr>
-                  <th>Categoría</th>
-                  <th>Recurso</th>
-                  <th>Cantidad</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {solicitudTemp.map((r, i) => (
-                  <tr key={i}>
-                    <td>
-                      <Form.Select value={r.categoria} onChange={(e) => handleEdit(i, 'categoria', e.target.value)}>
-                        <option value="">Seleccione</option>
-                        {Object.keys(recursosPorCategoria).map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
-                      </Form.Select>
-                    </td>
-                    <td>
-                      <Form.Select value={r.recurso} onChange={(e) => handleEdit(i, 'recurso', e.target.value)} disabled={!r.categoria}>
-                        <option value="">Seleccione</option>
-                        {(recursosPorCategoria[r.categoria] || []).map((rec, idx) => <option key={idx} value={rec}>{rec}</option>)}
-                      </Form.Select>
-                    </td>
-                    <td>
-                      <Form.Control type="number" value={r.cantidad} min={1} onChange={(e) => handleEdit(i, 'cantidad', Number(e.target.value))} />
-                    </td>
-                    <td className="text-center">
-                      <Button variant="danger" size="sm" onClick={() => handleDelete(i)}>
-                        <BsTrash />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
-          <Button variant="primary" onClick={handleGuardarSolicitud} disabled={solicitudTemp.length === 0}>Guardar</Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+          return (
+            <tr key={idx}>
+              <td>{sol.descripcion}</td>
+              <td>{sol.fecha}</td>
+              <td>{sol.estatus}</td>
+              <td>
+                <ul className="mb-0">
+                  {recursosMostrados.map((r, i) => (
+                    <li key={i}>{r.categoria} - {r.recurso} ({r.cantidad})</li>
+                  ))}
+                </ul>
+                {sol.recursos.length > 2 && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="p-0 text-primary"
+                    style={{ textDecoration: 'underline', cursor: 'pointer' }}
+                    onClick={() => toggleExpand(idx)}
+                  >
+                    {isExpanded ? 'Ver menos' : 'Ver más'}
+                  </Button>
+                )}
+              </td>
+              <td>
+                <Button size="sm" variant="outline-danger" onClick={() => exportarPDF(sol)}>
+                  <BsFileEarmarkPdf /> PDF
+                </Button>{' '}
+                <Button 
+                  size="sm" 
+                  variant="outline-info" 
+                  onClick={() => {
+                    const encoded = encodeURIComponent(JSON.stringify(sol));
+                    window.open(`/ver-solicitud.html?data=${encoded}`, '_blank');
+                  }}
+                >
+                  <BsEye />
+                </Button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </Table>
   );
 };
 
-export default Solicitudes;
+export default TablaSolicitudes;

@@ -152,8 +152,10 @@ const SolicitudesAsignacion = () => {
             <th># Solicitud</th>
             <th>Área</th>
             <th>Solicitante</th>
-            <th>Fecha</th>
+            <th>Fecha Solicitud</th>
+            <th>Fecha Atención</th>
             <th>Estatus</th>
+            <th>Autorizo</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -164,7 +166,9 @@ const SolicitudesAsignacion = () => {
               <td>{s.area}</td>
               <td>{s.solicitante}</td>
               <td>{s.fecha}</td>
+              <td>{s.fecha}</td>              
               <td>{s.estatus}</td>
+              <td>Ana Sofia P</td>
               <td>
                 <Button 
                   size="sm" 
@@ -254,8 +258,8 @@ const SolicitudesAsignacion = () => {
           ¿Está seguro de guardar esta asignación? Esta acción no se puede deshacer.
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowConfirmGuardar(false)}>No</Button>
-          <Button variant="primary" onClick={handleGuardarAsignacion}>Sí, Guardar</Button>
+          <Button variant="secondary" onClick={() => setShowConfirmGuardar(false)}>Cancelar</Button>
+          <Button variant="primary" onClick={handleGuardarAsignacion}>Aceptar</Button>
         </Modal.Footer>
       </Modal>
 
@@ -269,39 +273,12 @@ const SolicitudesAsignacion = () => {
           ¿Está seguro que desea cancelar esta solicitud? Esta acción no se puede deshacer.
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCancelModal(false)}>No</Button>
-          <Button variant="danger" onClick={handleCancelarSolicitud}>Sí, Cancelar</Button>
+          <Button variant="secondary" onClick={() => setShowCancelModal(false)}>Cancelar</Button>
+          <Button variant="danger" onClick={handleCancelarSolicitud}>Aceptar</Button>
         </Modal.Footer>
       </Modal>
 
-      {/* Historial */}
-      <h5 className="mt-5">Historial de Asignaciones</h5>
-      <Table bordered>
-        <thead>
-          <tr>
-            <th># Solicitud</th>
-            <th>Área</th>
-            <th>Solicitante</th>
-            <th>Fecha Asignación</th>
-            <th>Detalles</th>
-          </tr>
-        </thead>
-        <tbody>
-          {historial.map((h, idx) => (
-            <tr key={idx}>
-              <td>{h.id}</td>
-              <td>{h.area}</td>
-              <td>{h.solicitante}</td>
-              <td>{h.fecha}</td>
-              <td>
-                {Object.entries(h.cantidades).map(([k, v]) => (
-                  <div key={k}>Recurso {Number(k)+1}: {v}</div>
-                ))}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+
     </div>
   );
 };

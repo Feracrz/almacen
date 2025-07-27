@@ -8,13 +8,15 @@ const Navbar = ({ onSelect }) => {
 
   const menuItems = [
     { icon: "bi-house-fill", label: "Panel" },
-     //{ icon: "bi-truck", label: "Notificaciones" },
+    { icon: "bi-bell", label: "Notificaciones" },
     { icon: "bi-boxes", label: "Almacen e Inventario" },
     { icon: "bi-truck-flatbed", label: "Solicitudes" },
     { icon: "bi-box", label: "Validacion de Solicitudes" },
     { icon: "bi-bar-chart-line", label: "Informes" },
-    { icon: "bi-gear", label: "Administración" },
     { icon: "bi-people", label: "Usuarios" },
+    { icon: "bi-gear", label: "Administración" },
+    
+
   ];
 
   return (
@@ -42,7 +44,7 @@ const Navbar = ({ onSelect }) => {
             </li>
           ))}
         </ul>
-        {/* Usuario */}
+        {/*Usuario*/}
       <div className="p-3 border-top d-flex align-items-center">
         <div className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
           AM
@@ -54,9 +56,12 @@ const Navbar = ({ onSelect }) => {
           </div>
         )}
       </div>
+      
       </nav>
 
-      
+      <div className='p-5'>
+      <strong>Cerrar Sesion</strong>
+      </div>
     </div>
   );
 };

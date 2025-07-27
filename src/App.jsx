@@ -5,6 +5,7 @@ import Panel from './components/panelControl/panel';
 import Registro from './components/registroCompra/Registro';
 import Solicitudes from './components/solicitudes/agregrarSolicitudes';
 import Respuesta from './components/respuestas/respuestaSolicitudes';
+import Notificaciones from './components/Notificaciones/notificaciones';
 
 const App = () => {
   const [seccionActiva, setSeccionActiva] = useState("Panel");
@@ -15,6 +16,14 @@ const App = () => {
         return <div className="p-4">
         <Panel/>
         </div>;
+
+case "Notificaciones":
+  return (
+    <div className="p-4">
+      <h1>Esta es la vista de notificaciones</h1>
+      <Notificaciones/>
+      </div>
+      ); 
       case "Almacen e Inventario":
         return (
           <div className="p-4">

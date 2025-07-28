@@ -13,11 +13,10 @@ const SolicitudesAsignacion = () => {
   const [cantidadesAsignar, setCantidadesAsignar] = useState({});
   const [historial, setHistorial] = useState([]);
 
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const [solicitudes, setSolicitudes] = useState([
+ const [solicitudes, setSolicitudes] = useState([
     { 
       id: 1, 
       area: 'Recursos Humanos', 
@@ -40,60 +39,103 @@ const SolicitudesAsignacion = () => {
       ]
     },
     { 
-        id: 3, 
-        area: 'Devs', 
-        solicitante: 'Juan Pérez', 
-        fecha: '2025-07-22', 
-        estatus: 'Pendiente',
-        recursos: [
-          { nombre: 'lapiceros', stock: 2, cantidadSolicitada: 5 }
-        ]
-      },
+      id: 3, 
+      area: 'Devs', 
+      solicitante: 'Juan Pérez', 
+      fecha: '2025-07-22', 
+      estatus: 'Pendiente',
+      recursos: [
+        { nombre: 'Lapiceros', stock: 2, cantidadSolicitada: 5 }
+      ]
+    },
   ]);
 
-  // Abrir popout
+  // --- Catálogo de categorías y recursos
+  const recursosPorCategoria = {
+    "Papelería": [ "Acuarela escolar", "Bicolor", "Block para acuarela", "Borradores de pizarrón blanco", "Carpeta blanca carta tres orificios arillo en 3 pulgadas" ],
+    "Material de limpieza": [ "Aromatizante en aerosol", "Bolsa negra grande", "Bolsa negra mediana", "Cepillo de acero inoxidable", "Cloro" ],
+    "Insumos de oficina": [ "Agua embotellada", "Azúcar refinada", "Bebida rehidratante suero", "Café soluble", "Charolas desechables" ],
+    "Consumibles": [ "DVD-R", "Memoria USB 16gb", "Memoria USB 32gb", "Memoria USB 64gb", "Tóner 410A negro" ]
+  };
+  const categorias = Object.keys(recursosPorCategoria);
+
+  // --- NUEVA SECCIÓN: Recursos dinámicos
+  const [nuevosRecursos, setNuevosRecursos] = useState([]);
+
+  const handleAgregarRecurso = () => {
+    setNuevosRecursos([
+      ...nuevosRecursos,
+      { categoria: "", recurso: "", stock: 0, cantidad: 0 }
+    ]);
+  };
+
+  const handleEliminarRecurso = (index) => {
+    setNuevosRecursos(nuevosRecursos.filter((_, i) => i !== index));
+  };
+
+  const handleChangeRecurso = (index, field, value) => {
+    const updated = [...nuevosRecursos];
+    updated[index][field] = field === "cantidad" || field === "stock" ? Number(value) : value;
+    // Reset recurso si cambia categoría
+    if (field === "categoria") updated[index].recurso = "";
+    setNuevosRecursos(updated);
+  };
+
+  const validarNuevosRecursos = () => {
+    for (let r of nuevosRecursos) {
+      if (!r.categoria.trim() || !r.recurso.trim() || r.cantidad <= 0) {
+        alert("Todos los recursos nuevos deben tener categoría, recurso y cantidad válida.");
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // --- Abrir modal
   const handleOpenPopout = (solicitud) => {
     setSelectedSolicitud(solicitud);
     const inicial = {};
     solicitud.recursos.forEach((r, idx) => inicial[idx] = 0);
     setCantidadesAsignar(inicial);
+    setNuevosRecursos([]);
     setShowPopout(true);
   };
 
-  // Confirmar guardado
+  // --- Confirmar guardado
   const handleConfirmGuardar = () => {
     setShowConfirmGuardar(true);
   };
 
-  // Guardar asignación
+  // --- Guardar
   const handleGuardarAsignacion = () => {
+    if (!validarNuevosRecursos()) return;
+
     const fechaAccion = new Date().toISOString().slice(0, 10);
     setSolicitudes(prev =>
       prev.map(s => {
         if (s.id === selectedSolicitud.id) {
-          const nuevosRecursos = s.recursos.map((r, idx) => {
-            const asignado = cantidadesAsignar[idx] || 0;
-            return {
-              ...r,
-              stock: r.stock - asignado
-            };
-          });
-          const estatus = Object.values(cantidadesAsignar).some(c => c > 0) ? "Asignada" : "No asignada";
-          return { ...s, recursos: nuevosRecursos, estatus };
+          const nuevosRecursosAsignados = nuevosRecursos.map(r => ({
+            nombre: r.recurso,
+            stock: r.stock - r.cantidad,
+            cantidadSolicitada: r.cantidad
+          }));
+          const recursosActualizados = [...s.recursos, ...nuevosRecursosAsignados];
+          const estatus = Object.values(cantidadesAsignar).some(c => c > 0) || nuevosRecursos.length > 0 ? "Asignada" : "No asignada";
+          return { ...s, recursos: recursosActualizados, estatus };
         }
         return s;
       })
     );
 
-    // Guardar en historial
     setHistorial(prev => [...prev, {
       id: selectedSolicitud.id,
       solicitante: selectedSolicitud.solicitante,
       area: selectedSolicitud.area,
       fecha: fechaAccion,
-      cantidades: { ...cantidadesAsignar }
+      cantidades: { ...cantidadesAsignar, nuevosRecursos }
     }]);
 
+    setNuevosRecursos([]);
     setShowPopout(false);
     setShowConfirmGuardar(false);
   };
@@ -105,7 +147,7 @@ const SolicitudesAsignacion = () => {
     setCantidadesAsignar(vacio);
   };
 
-  // Cancelar todo
+  // Cancelar
   const handleCancelarSolicitud = () => {
     setSolicitudes(prev =>
       prev.map(s => s.id === selectedSolicitud.id ? { ...s, estatus: 'Cancelada' } : s)
@@ -114,7 +156,7 @@ const SolicitudesAsignacion = () => {
     setShowPopout(false);
   };
 
-  //filtrar
+  // --- Filtros
   const filteredSolicitudes = solicitudes.filter(s =>
     (s.area.toLowerCase().includes(search.toLowerCase()) || 
      s.solicitante.toLowerCase().includes(search.toLowerCase())) &&
@@ -122,7 +164,7 @@ const SolicitudesAsignacion = () => {
     (!fechaFin || s.fecha <= fechaFin)
   );
 
-  //paginación
+  // --- Paginación
   const totalPages = Math.ceil(filteredSolicitudes.length / itemsPerPage);
   const currentSolicitudes = filteredSolicitudes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -146,6 +188,7 @@ const SolicitudesAsignacion = () => {
         </Col>
       </Row>
 
+      {/* Tabla de solicitudes */}
       <Table bordered hover>
         <thead className="text-center">
           <tr>
@@ -155,7 +198,7 @@ const SolicitudesAsignacion = () => {
             <th>Fecha Solicitud</th>
             <th>Fecha Atención</th>
             <th>Estatus</th>
-            <th>Autorizo</th>
+            <th>Autorizó</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -190,7 +233,7 @@ const SolicitudesAsignacion = () => {
         </tbody>
       </Table>
 
-      {/* Paginación mejorarla por a que  ya  usaba antes  */}
+      {/* Paginación */}
       <Pagination>
         {[...Array(totalPages)].map((_, idx) => (
           <Pagination.Item key={idx} active={idx + 1 === currentPage} onClick={() => setCurrentPage(idx + 1)}>
@@ -199,7 +242,7 @@ const SolicitudesAsignacion = () => {
         ))}
       </Pagination>
 
-      {/* Popout chido */}
+      {/* MODAL DETALLE */}
       <Modal show={showPopout} onHide={() => setShowPopout(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detalle de Solicitud</Modal.Title>
@@ -240,6 +283,69 @@ const SolicitudesAsignacion = () => {
               </tbody>
             </Table>
 
+            <hr />
+            <h5>Agregar Nuevos Recursos</h5>
+            <Button variant="outline-success" size="sm" onClick={handleAgregarRecurso}>+ Agregar Recurso</Button>
+
+            {nuevosRecursos.length > 0 && (
+              <Table bordered className="mt-3">
+                <thead>
+                  <tr>
+                    <th>Categoría</th>
+                    <th>Recurso</th>
+                    <th>Stock Disponible</th>
+                    <th>Cantidad a Asignar</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {nuevosRecursos.map((r, idx) => (
+                    <tr key={idx}>
+                      <td>
+                        <Form.Select 
+                          value={r.categoria} 
+                          onChange={(e) => handleChangeRecurso(idx, "categoria", e.target.value)} 
+                          required
+                        >
+                          <option value="">Seleccione</option>
+                          {categorias.map((c, i) => <option key={i} value={c}>{c}</option>)}
+                        </Form.Select>
+                      </td>
+                      <td>
+                        <Form.Select
+                          value={r.recurso}
+                          onChange={(e) => handleChangeRecurso(idx, "recurso", e.target.value)}
+                          disabled={!r.categoria}
+                          required
+                        >
+                          <option value="">Seleccione</option>
+                          {r.categoria && recursosPorCategoria[r.categoria].map((re, i) => (
+                            <option key={i} value={re}>{re}</option>
+                          ))}
+                        </Form.Select>
+                      </td>
+                      <td>
+                        {r.stock}
+                  
+                      </td>
+                      <td>
+                        <Form.Control 
+                          type="number" 
+                          min={1} 
+                          value={r.cantidad}
+                          onChange={(e) => handleChangeRecurso(idx, "cantidad", e.target.value)}
+                          required
+                        />
+                      </td>
+                      <td>
+                        <Button variant="outline-danger" size="sm" onClick={() => handleEliminarRecurso(idx)}>Eliminar</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            )}
+
             <Button variant="secondary" onClick={handleNoAsignar}>No Asignar</Button>
           </Modal.Body>
         )}
@@ -249,7 +355,7 @@ const SolicitudesAsignacion = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* confirmandign */}
+      {/* MODAL CONFIRMAR GUARDADO */}
       <Modal show={showConfirmGuardar} onHide={() => setShowConfirmGuardar(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Confirmar Asignación</Modal.Title>
@@ -263,8 +369,7 @@ const SolicitudesAsignacion = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal cancelar solicitud para que se imprima bonito 
-       */}
+      {/* MODAL CANCELAR SOLICITUD */}
       <Modal show={showCancelModal} onHide={() => setShowCancelModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Cancelar Solicitud</Modal.Title>
@@ -277,8 +382,6 @@ const SolicitudesAsignacion = () => {
           <Button variant="danger" onClick={handleCancelarSolicitud}>Aceptar</Button>
         </Modal.Footer>
       </Modal>
-
-
     </div>
   );
 };

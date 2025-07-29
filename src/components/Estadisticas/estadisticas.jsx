@@ -6,10 +6,10 @@ import * as XLSX from "xlsx";
 
 const InformesRecursos = () => {
   const [datos, setDatos] = useState([
-    { categoria: "Papeleria", recurso: "Laptop", cantidad: 15, fecha: "2025-07-01" },
+    { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
     { categoria: "Material de Limpieza", recurso: "Escoba", cantidad: 20, fecha: "2025-07-10" },
-    { categoria: "Insumos de oficina", recurso: "Escritorio", cantidad: 10, fecha: "2025-07-05" },
-    { categoria: "Consumibles", recurso: "Galletar", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Insumos de oficina", recurso: "Toner", cantidad: 10, fecha: "2025-07-05" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
    
   ]);
 

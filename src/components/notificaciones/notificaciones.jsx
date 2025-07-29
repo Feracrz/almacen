@@ -2,17 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Alert, ListGroup, Badge } from "react-bootstrap";
 
 const Notificaciones = () => {
-  // Datos de ejemplo (simulan recursos en el sistema)
   const [recursos, setRecursos] = useState([
-    { id: 1, nombre: "Laptops", stock: 5, minimo: 10 },
-    { id: 2, nombre: "Monitores", stock: 25, minimo: 20 },
-    { id: 3, nombre: "Sillas", stock: 3, minimo: 5 },
-    { id: 4, nombre: "Cuadernos", stock: 50, minimo: 30 },
+    { id: 1, nombre: "Lapiz Morado", stock: 5, minimo: 10 },
+    { id: 2, nombre: "hojas oficio", stock: 25, minimo: 20 },
+    { id: 3, nombre: "Cloro", stock: 3, minimo: 5 },
+    { id: 4, nombre: "Plumones", stock: 50, minimo: 30 },
   ]);
 
   const [alertas, setAlertas] = useState([]);
 
-  // Al montar el componente, calculamos las notificaciones
+ 
   useEffect(() => {
     const bajasExistencias = recursos.filter((r) => r.stock <= r.minimo);
     setAlertas(bajasExistencias);
@@ -20,13 +19,13 @@ const Notificaciones = () => {
 
   return (
     <div className="container mt-4">
-      <h2>Notificaciones de Stock</h2>
+      <h2>Notificaciones</h2>
       {alertas.length > 0 ? (
         <Alert variant="warning">
-          <strong>¡Atención!</strong> Algunos recursos están por debajo del stock mínimo.
+          <strong>¡Atención!</strong> Algunos recursos están por debajo del stock mínimo
         </Alert>
       ) : (
-        <Alert variant="success">Todo el stock está en niveles seguros.</Alert>
+        <Alert variant="success">Todo el stock está completo.</Alert>
       )}
 
       <ListGroup>

@@ -4,45 +4,32 @@ import { BsFileEarmarkPdf, BsEye } from 'react-icons/bs';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-// Función para exportar PDF con logo
 const exportarPDF = async (solicitud) => {
-  const doc = new jsPDF();
+  const encoded = encodeURIComponent(JSON.stringify(solicitud));
+  const url = `/ver-solicitud.html?data=${encoded}`;
 
-  // Cargar logo desde public
-  const logoUrl = '/logo.jpg'; // <-- coloca tu logo en public/logo.png
-  const img = await fetch(logoUrl).then(r => r.blob()).then(b => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(b);
+  // ------> se abre el documento 
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = url;
+  document.body.appendChild(iframe);
+
+  iframe.onload = async () => {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const content = iframe.contentWindow.document.body;
+
+    // ------> descarca del documento de la solicitud 
+    await doc.html(content, {
+      x: 10,
+      y: 10,
+      width: 190,
+      windowWidth: 800,
+      callback: function (doc) {
+        doc.save(`Solicitud_${solicitud.fecha}.pdf`);
+        document.body.removeChild(iframe); // Limpiamos
+      }
     });
-  });
-
-  // Insertar logo
-  doc.addImage(img, 'PNG', 14, 10, 30, 30);
-
-  // Título
-  doc.setFontSize(18);
-  doc.text("Solicitud de Recursos", 50, 25);
-
-  // Datos generales
-  doc.setFontSize(12);
-  doc.text(`Descripción: ${solicitud.descripcion}`, 14, 50);
-  doc.text(`Fecha: ${solicitud.fecha}`, 14, 60);
-  doc.text(`Estatus: ${solicitud.estatus}`, 14, 70);
-
-  // Tabla
-  doc.autoTable({
-    startY: 80,
-    head: [['Categoría', 'Recurso', 'Cantidad']],
-    body: solicitud.recursos.map(r => [r.categoria, r.recurso, r.cantidad]),
-    theme: 'grid',
-    headStyles: { fillColor: [46, 101, 158], textColor: 255 },
-    styles: { fontSize: 11 }
-  });
-
-  // Descargar PDF
-  doc.save(`Solicitud_${solicitud.fecha}.pdf`);
+  };
 };
 
 const TablaSolicitudes = ({ solicitudes }) => {

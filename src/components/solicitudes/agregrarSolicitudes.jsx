@@ -97,7 +97,7 @@ const Solicitudes = () => {
     setCantidad(1);
   };
 
-  // Editar un campo en la tabla temporal
+  //----------> editar el  campo en la tabla temporal
   const handleEdit = (index, field, value) => {
     const updated = [...solicitudTemp];
     updated[index][field] = value;

@@ -12,7 +12,7 @@ import Papa from 'papaparse';
 import { parseStringPromise } from 'xml2js';
 import { XMLParser } from 'fast-xml-parser';
 
-
+const initialData = [];
 const recursosPorCategoria = {
   "Papelería": [
     "Acuarela escolar", "Bicolor", "Block para acuarela", "Borradores de pizarrón blanco",

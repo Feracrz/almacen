@@ -47,21 +47,26 @@ const SolicitudesAsignacion = () => {
     setNuevosRecursos([...nuevosRecursos, { categoria: "", recurso: "", stock: 0, cantidad: 0 }]);
   };
   const handleEliminarRecurso = (index) => setNuevosRecursos(nuevosRecursos.filter((_, i) => i !== index));
-  const handleChangeRecurso = (index, field, value) => {
-    const updated = [...nuevosRecursos];
-    updated[index][field] = field === "cantidad" ? Number(value) : value;
-    if (field === "categoria") updated[index].recurso = "";
-    setNuevosRecursos(updated);
-  };
-  const validarNuevosRecursos = () => {
-    for (let r of nuevosRecursos) {
-      if (!r.categoria.trim() || !r.recurso.trim() || r.cantidad <= 0) {
-        alert("Todos los recursos nuevos deben tener categoría, recurso y cantidad válida.");
-        return false;
-      }
+const handleChangeRecurso = (index, field, value) => {
+  const updated = [...nuevosRecursos];
+  if (field === "cantidad") {
+    const cantidad = Number(value);
+    if (cantidad < 0) return; // no permitir negativos
+    if (cantidad > updated[index].stock) return; // no permitir más que el stock disponible
+    updated[index].cantidad = cantidad;
+  } else {
+    updated[index][field] = value;
+    if (field === "categoria") {
+      updated[index].recurso = "";
+      updated[index].stock = 0; // reiniciar stock si cambia categoría
     }
-    return true;
-  };
+    if (field === "recurso") {
+      // Asignamos un stock inicial según el recurso (ejemplo: siempre 10 por ahora)
+      updated[index].stock = 10;
+    }
+  }
+  setNuevosRecursos(updated);
+};
 
   // ----- Abrir modales -----
   const handleOpenPopout = (solicitud) => {
@@ -77,9 +82,20 @@ const SolicitudesAsignacion = () => {
     setNewStatus(solicitud.estatus);
     setShowStatusModal(true);
   };
-
+// ----- Validar Nuevos Recursos -----
+const validarNuevosRecursos = () => {
+  for (let r of nuevosRecursos) {
+    if (!r.categoria.trim() || !r.recurso.trim() || r.cantidad <= 0) {
+      alert("Todos los recursos nuevos deben tener categoría, recurso y cantidad válida.");
+      return false;
+    }
+  }
+  return true;
+};
   // ----- Guardar asignación -----
   const handleConfirmGuardar = () => setShowConfirmGuardar(true);
+
+  
   const handleGuardarAsignacion = () => {
     if (!validarNuevosRecursos()) return;
     const fechaAccion = new Date().toISOString().slice(0, 10);
@@ -97,7 +113,10 @@ const SolicitudesAsignacion = () => {
         }
         return s;
       })
+      
     );
+    
+    
     setHistorial(prev => [...prev, {
       id: selectedSolicitud.id,
       solicitante: selectedSolicitud.solicitante,
@@ -267,7 +286,7 @@ const SolicitudesAsignacion = () => {
                       <td>
                         <Form.Select value={r.recurso} disabled={!r.categoria} onChange={(e) => handleChangeRecurso(idx, "recurso", e.target.value)}><option value="">Seleccione</option>{r.categoria && recursosPorCategoria[r.categoria].map((re, i) => <option key={i} value={re}>{re}</option>)}</Form.Select>
                       </td>
-                      <td>10</td>
+                      <td>{r.stock - r.cantidad}</td>
                       <td><Form.Control type="number" min={1} value={r.cantidad} onChange={(e) => handleChangeRecurso(idx, "cantidad", e.target.value)} /></td>
                       <td><Button variant="outline-danger" size="sm" onClick={() => handleEliminarRecurso(idx)}>Eliminar</Button></td>
                     </tr>
@@ -300,10 +319,9 @@ const SolicitudesAsignacion = () => {
           <Form.Group>
             <Form.Label>Nuevo estatus:</Form.Label>
             <Form.Select value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
-              <option value="Pendiente">Pendiente</option>
-              <option value="En Proceso">En Proceso</option>
-              <option value="Autorizada">Autorizada</option>
-            </Form.Select>
+  <option value="Pendiente">Pendiente</option>
+  <option value="En espera">En espera</option>
+</Form.Select>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>

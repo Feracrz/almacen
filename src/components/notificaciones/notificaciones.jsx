@@ -32,6 +32,7 @@ const Notificaciones = () => {
         {alertas.map((item) => (
           <ListGroup.Item key={item.id} className="d-flex justify-content-between align-items-center">
             {item.nombre}
+            <Badge bg="danger">Minimo: {item.minimo}</Badge>
             <Badge bg="danger">Stock: {item.stock}</Badge>
           </ListGroup.Item>
         ))}

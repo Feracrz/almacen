@@ -5,9 +5,10 @@ import Panel from './components/panelControl/panel';
 import Registro from './components/registroCompra/Registro';
 import Solicitudes from './components/solicitudes/agregrarSolicitudes';
 import Respuesta from './components/respuestas/respuestaSolicitudes';
-import Notificaciones from './components/Notificaciones/notificaciones';
+import Notificaciones from './components/notificaciones/notificaciones';
 import Usuarios from './components/Usuarios/usuarios';
 import Estadisticas from './components/Estadisticas/estadisticas';
+import Login from './components/login/login';
 
 const App = () => {
   const [seccionActiva, setSeccionActiva] = useState("Panel");
@@ -68,9 +69,13 @@ case "Usuarios":
         );
 
 
-      case "Proveedores":
-        return <h2 className="p-4">Gestión de proveedores</h2>;
-
+      case "Login":
+             return (
+          <div className='p-4'>
+          <h2 className="p-4">Este es el login</h2>;
+            <Login />
+          </div>
+        );
 
    
 

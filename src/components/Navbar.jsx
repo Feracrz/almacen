@@ -15,6 +15,7 @@ const Navbar = ({ onSelect }) => {
     { icon: "bi-bar-chart-line", label: "Estadisticas" },
     { icon: "bi-people", label: "Usuarios" },
     { icon: "bi-gear", label: "Administración" },
+    { icon: "bi-gear", label: "Login" },
     
 
   ];

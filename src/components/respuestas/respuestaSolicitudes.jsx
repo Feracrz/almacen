@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Button, Form, Row, Col, InputGroup, Pagination, Modal } from 'react-bootstrap';
 import { BsSearch, BsFilePdf, BsFileEarmarkText, BsClockHistory } from 'react-icons/bs';
-import ModalAsignacion from './ModalAsignacion';
+import ModalAsignacion from './modalAsignacion';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 

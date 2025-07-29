@@ -504,13 +504,11 @@ const handleSubmit = (event) => {
               copy[idx].descripcion = e.target.value;
               setFacturaRows(copy);
             }} /></td>
-            {/*<td><Form.Control value={item.tipo} onChange={e => {
+            <td><Form.Control value={item.tipo} onChange={e => {
               const copy = [...facturaRows];
               copy[idx].tipo = e.target.value;
               setFacturaRows(copy);
-            }} /></td>*/}
-
-            <td>{item.tipo.toFixed(2)}</td>
+            }} /></td>
             <td>${item.valoruni.toFixed(2)}</td>
             <td>${item.cantidad.toFixed(2)}</td>
             <td>{item.cantidad}</td>

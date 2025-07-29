@@ -216,6 +216,7 @@ const SolicitudesAsignacion = () => {
             <th>Solicitante</th>
             <th>Fecha</th>
             <th>Estatus</th>
+            <th>Atendio</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -226,6 +227,7 @@ const SolicitudesAsignacion = () => {
               <td>{s.area}</td>
               <td>{s.solicitante}</td>
               <td>{s.fecha}</td>
+              <td>Rosa Maria Tolentino</td>
               <td>{s.estatus}</td>
               <td>
                 {(s.estatus === "Pendiente" || s.estatus === "En espera") ? (

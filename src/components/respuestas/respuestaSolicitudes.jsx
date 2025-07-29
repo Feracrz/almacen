@@ -171,18 +171,7 @@ const SolicitudesAsignacion = () => {
       </Row>
 
       {/* Selector cantidad por página */}
-      <Row className="mb-3">
-        <Col md={2}>
-          <Form.Select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}>
-            <option value={5}>5 por página</option>
-            <option value={10}>10 por página</option>
-            <option value={20}>20 por página</option>
-          </Form.Select>
-        </Col>
-        <Col className="text-end">
-          <Button variant="outline-secondary" onClick={() => setShowHistorialModal(true)}><BsClockHistory /> Ver Historial</Button>
-        </Col>
-      </Row>
+      
 
       {/* Tabla */}
       <Table bordered hover>
@@ -217,15 +206,29 @@ const SolicitudesAsignacion = () => {
       </Table>
 
       {/* Info paginación */}
-      <p>Mostrando <strong>{filteredSolicitudes.length === 0 ? 0 : indexOfFirstItem + 1}</strong> - <strong>{Math.min(indexOfLastItem, filteredSolicitudes.length)}</strong> de <strong>{filteredSolicitudes.length}</strong> registros</p>
+      <div className='d-flex justify-content-center'><p>Mostrando <strong>{filteredSolicitudes.length === 0 ? 0 : indexOfFirstItem + 1}</strong> - <strong>{Math.min(indexOfLastItem, filteredSolicitudes.length)}</strong> de <strong>{filteredSolicitudes.length}</strong> registros</p></div>
 
-      <Pagination>
+      <Pagination className='d-flex justify-content-center'>
         <Pagination.Prev onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} />
         {[...Array(totalPages)].map((_, idx) => (
           <Pagination.Item key={idx} active={idx + 1 === currentPage} onClick={() => setCurrentPage(idx + 1)}>{idx + 1}</Pagination.Item>
         ))}
         <Pagination.Next onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} />
       </Pagination>
+      
+        <Row className="text-end">
+        
+        <Col >
+          <Button variant="outline-secondary" onClick={() => setShowHistorialModal(true)}><BsClockHistory /> Ver Historial</Button>
+        </Col>
+        <Col  md={2}>
+          <Form.Select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}>
+            <option value={5}>20 por página</option>
+            <option value={10}>50 por página</option>
+            <option value={20}>100 por página</option>
+          </Form.Select>
+        </Col>
+      </Row>
 
       {/* Modal Ver/Asignar */}
       <Modal show={showPopout} onHide={() => setShowPopout(false)} size="lg">

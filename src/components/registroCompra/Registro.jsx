@@ -604,7 +604,7 @@ const handleSubmit = (event) => {
         <th>Cantidad</th>
         <th>Cantidad Total</th>
         <th>Fecha</th>
-        <th>Estatus</th>
+       {/*  <th>Estatus</th> */}
         <th>Acciones</th>
       </tr>
     </thead>
@@ -630,7 +630,7 @@ const handleSubmit = (event) => {
           <td>{item.cantidad}</td>
           <td>{item.cantidadtotal} </td>
           <td>{item.fecha}</td>
-           <td>
+           {/*<td>
             <span
               style={{
                 color: '#fff',
@@ -644,23 +644,23 @@ const handleSubmit = (event) => {
               }}
             >
               {item.activo ? 'Activo' : 'Inactivo'}
-            </span>
-          </td>
+            </span> 
+          </td>*/}
           <td className="d-flex flex-column gap-1 align-items-center">
-            <Button size="sm" variant="dark" onClick={() => handleEdit(item)}>
+            {/*<Button size="sm" variant="dark" onClick={() => handleEdit(item)}>
               <BsPencilFill />
-            </Button>
+            </Button> */} 
 
-            <Button
+           {/*  <Button
               size="sm"
               variant="outline-danger"
               onClick={() => handleDelete(item.id)}
               style={{ color: '#e52122', borderColor: '#e52122' }}
             >
               <BsTrashFill />
-            </Button>
+            </Button>*/}
 
-            <Button
+            {/*<Button
               size="sm"
               variant="outline-warning"
               onClick={() => {
@@ -670,7 +670,7 @@ const handleSubmit = (event) => {
               style={{ color: '#ee722d', borderColor: '#ee722d' }}
             >
               <BsSlashCircle />
-            </Button>
+            </Button>*/}
 
             {/* Botón o input para XML */}
             {!item.xmlFile ? (
@@ -726,9 +726,9 @@ const handleSubmit = (event) => {
         </tr>
       )}
 <Modal show={showModal} onHide={() => setShowModal(false)}>
-  <Modal.Header closeButton>
+<Modal.Header closeButton>
     <Modal.Title>{editingItem?.id ? 'Editar Recurso' : 'Agregar Recurso'}</Modal.Title>
-  </Modal.Header>
+  </Modal.Header>* 
   <Modal.Body>
     <Form>
       {/* Categoría */}

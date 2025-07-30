@@ -1,9 +1,9 @@
 import React from 'react'
 
-export default function Login() {
+export default function login() {
   return (
     <div>
-      <h1>Este es el  Login</h1>
+      <h1> goldad</h1>
     </div>
   )
 }

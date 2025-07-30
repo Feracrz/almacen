@@ -855,7 +855,7 @@ const handleSubmit = (event) => {
 
 
     </div>
-  );
+  );     
 };
 
 export default Registro;

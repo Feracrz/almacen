@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { Table, Button } from 'react-bootstrap';
-import { BsFileEarmarkPdf, BsEye } from 'react-icons/bs';
+import { Table, Button, Modal } from 'react-bootstrap';
+import { BsFileEarmarkPdf, BsEye, BsPencil } from 'react-icons/bs';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-const exportarPDF = async (solicitud) => {
-  const encoded = encodeURIComponent(JSON.stringify(solicitud));
-  const url = `/ver-solicitud.html?data=${encoded}`;
+   const exportarPDF = async (solicitud) => {
+    const encoded = encodeURIComponent(JSON.stringify(solicitud));
+    const url = `/ver-solicitud.html?data=${encoded}`;
 
-  // ------> se abre el documento 
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = url;
@@ -17,8 +16,6 @@ const exportarPDF = async (solicitud) => {
   iframe.onload = async () => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const content = iframe.contentWindow.document.body;
-
-    // ------> descarca del documento de la solicitud 
     await doc.html(content, {
       x: 10,
       y: 10,
@@ -26,84 +23,106 @@ const exportarPDF = async (solicitud) => {
       windowWidth: 800,
       callback: function (doc) {
         doc.save(`Solicitud_${solicitud.fecha}.pdf`);
-        document.body.removeChild(iframe); // Limpiamos
+        document.body.removeChild(iframe);
       }
     });
   };
 };
 
-const TablaSolicitudes = ({ solicitudes }) => {
-  const [expandedRows, setExpandedRows] = useState([]);
+const TablaSolicitudes = ({ solicitudes, onEditarRecursos }) => {
+  const [showModalVer, setShowModalVer] = useState(false);
+  const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
 
-  const toggleExpand = (index) => {
-    setExpandedRows(prev =>
-      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
-    );
+  const handleVer = (sol) => {
+    setSolicitudSeleccionada(sol);
+    setShowModalVer(true);
   };
 
   return (
-    <Table striped bordered>
-      <thead>
-        <tr>
-          <th>Descripción</th>
-          <th>Fecha</th>
-          <th>Estatus</th>
-          <th>Recursos</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {solicitudes.map((sol, idx) => {
-          const isExpanded = expandedRows.includes(idx);
-          const recursosMostrados = isExpanded ? sol.recursos : sol.recursos.slice(0, 2);
-
-          return (
+    <>
+      <Table striped bordered>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {solicitudes.map((sol, idx) => (
             <tr key={idx}>
-              <td>{sol.descripcion}</td>
               <td>{sol.fecha}</td>
               <td>{sol.estatus}</td>
               <td>
-                <ul className="mb-0">
-                  {recursosMostrados.map((r, i) => (
-                    <li key={i}>{r.categoria} - {r.recurso} ({r.cantidad})</li>
-                  ))}
-                </ul>
-                {sol.recursos.length > 2 && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="p-0 text-primary"
-                    style={{ textDecoration: 'underline', cursor: 'pointer' }}
-                    onClick={() => toggleExpand(idx)}
-                  >
-                    {isExpanded ? 'Ver menos' : 'Ver más'}
-                  </Button>
-                )}
-              </td>
-              <td>
-                <Button 
+                {/* <Button 
                   size="sm" 
                   variant="outline-danger" 
                   onClick={() => exportarPDF(sol)}
                 >
-                  <BsFileEarmarkPdf /> PDF
-                </Button>{' '}
+                  <BsFileEarmarkPdf />
+                </Button>{' '}* */}
                 <Button 
                   size="sm" 
                   variant="outline-info" 
-                  onClick={() => {
-                    const encoded = encodeURIComponent(JSON.stringify(sol));
-                    window.open(`/ver-solicitud.html?data=${encoded}`, '_blank');
-                  }}
+                  onClick={() => handleVer(sol)}
                 >
                   <BsEye />
-                </Button>
+                </Button>{' '}
+               {sol.estatus !== "Cancelado" && sol.estatus !== "Aprobado" && (
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    onClick={() => onEditarRecursos(sol)}
+                  >
+                    <BsPencil /> 
+                  </Button>
+                )}
               </td>
             </tr>
-          );
-        })}
-      </tbody>
-    </Table>
+          ))}
+        </tbody>
+      </Table>
+
+      {/* MODAL VER SOLICITUD */}
+      <Modal show={showModalVer} onHide={() => setShowModalVer(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Recursos solicitados</Modal.Title>
+        </Modal.Header>
+        
+        <Modal.Body>
+          {solicitudSeleccionada && (
+            <>
+              <p><strong>Solicitud:</strong> {solicitudSeleccionada.descripcion}</p>
+              <p><strong>Fecha:</strong> {solicitudSeleccionada.fecha}</p>
+              <p><strong>Estatus:</strong> {solicitudSeleccionada.estatus}</p>
+              <br/>
+              
+              <Table striped bordered>
+                <thead>
+                  <tr>
+                    <th>Categoría</th>
+                    <th>Recurso</th>
+                    <th>Cantidad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {solicitudSeleccionada.recursos.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.categoria}</td>
+                      <td>{r.recurso}</td>
+                      <td>{r.cantidad}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModalVer(false)}>Cerrar</Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 

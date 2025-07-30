@@ -78,41 +78,68 @@ const Solicitudes = () => {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showEditRecursos, setShowEditRecursos] = useState(false);
   const [categoria, setCategoria] = useState('');
   const [recurso, setRecurso] = useState('');
   const [cantidad, setCantidad] = useState(1);
   const [solicitudTemp, setSolicitudTemp] = useState([]);
-  const [solicitudes, setSolicitudes] = useState([]);
-  const [error, setError] = useState(''); // <-- estado para error
+  {/*const [solicitudes, setSolicitudes] = useState([]);*/}
+  const [solicitudes, setSolicitudes] = useState([
+    {
+      descripcion: "Solicitud de 3 recursos",
+      fecha: "2025-07-30",
+      estatus: "Pendiente",
+      recursos: [
+        { categoria: "Papelería", recurso: "Cuaderno profesional", cantidad: 2 },
+        { categoria: "Material de limpieza", recurso: "Cloro", cantidad: 1 }
+      ]
+    },
+    {
+      descripcion: "Solicitud de 2 recursos",
+      fecha: "2025-07-29",
+      estatus: "Cancelado",
+      recursos: [
+        { categoria: "Insumos de oficina", recurso: "Café soluble", cantidad: 1 },
+        { categoria: "Consumibles", recurso: "Memoria USB 16gb", cantidad: 1 }
+      ]
+    }, 
+    {
+      descripcion: "Solicitud de 1 recursos",
+      fecha: "2025-07-29",
+      estatus: "Aprobado",
+      recursos: [
+        { categoria: "Insumos de oficina", recurso: "Café soluble", cantidad: 1 },
+        { categoria: "Consumibles", recurso: "Memoria USB 16gb", cantidad: 1 }
+      ]
+    }
+  ]);
 
-  // Agregar recurso temporal con validación
+
+  const [solicitudEditRecursos, setSolicitudEditRecursos] = useState(null);
+  const [error, setError] = useState('');
+
   const handleAgregar = () => {
     if (!categoria || !recurso || cantidad < 1) {
       setError('Todos los campos son obligatorios.');
       return;
     }
-    setError(''); // limpiar error
+    setError('');
     setSolicitudTemp([...solicitudTemp, { categoria, recurso, cantidad }]);
     setRecurso('');
     setCantidad(1);
   };
 
-  //----------> editar el  campo en la tabla temporal
   const handleEdit = (index, field, value) => {
     const updated = [...solicitudTemp];
     updated[index][field] = value;
-    if (field === 'categoria') {
-      updated[index].recurso = '';
-    }
+    if (field === 'categoria') updated[index].recurso = '';
     setSolicitudTemp(updated);
   };
 
-  // Eliminar un recurso temporal
   const handleDelete = (index) => {
     setSolicitudTemp(solicitudTemp.filter((_, i) => i !== index));
   };
 
-  // Guardar solicitud completa
   const handleGuardarSolicitud = () => {
     if (solicitudTemp.length === 0) {
       setError('Debes agregar al menos un recurso antes de guardar.');
@@ -122,12 +149,26 @@ const Solicitudes = () => {
     const nueva = {
       descripcion: `Solicitud de ${solicitudTemp.length} recursos`,
       fecha: new Date().toISOString().substring(0, 10),
-      estatus: 'Cancelado',
+      estatus: 'Pendiente',
       recursos: solicitudTemp
     };
     setSolicitudes([...solicitudes, nueva]);
     setSolicitudTemp([]);
     setShowModal(false);
+  };
+
+  // Abrir modal de edición de recursos
+  const handleEditarRecursos = (sol) => {
+    setSolicitudEditRecursos({ ...sol });
+    setShowEditRecursos(true);
+  };
+
+  // Guardar edición de recursos
+  const handleGuardarEdicionRecursos = () => {
+    setSolicitudes(solicitudes.map(s => 
+      s.fecha === solicitudEditRecursos.fecha ? solicitudEditRecursos : s
+    ));
+    setShowEditRecursos(false);
   };
 
   return (
@@ -146,15 +187,19 @@ const Solicitudes = () => {
           <Button variant="primary" onClick={() => setShowModal(true)}><BsPlusLg /> Agregar Solicitud</Button>
         </Col>
       </Row>
-      <TablaSolicitudes solicitudes={solicitudes} />
 
+      <TablaSolicitudes 
+        solicitudes={solicitudes} 
+        onEditarRecursos={handleEditarRecursos} 
+      />
+
+      {/* MODAL NUEVA SOLICITUD */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Nueva Solicitud</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {error && <Alert variant="danger">{error}</Alert>} {/* <-- mostramos error */}
-
+          {error && <Alert variant="danger">{error}</Alert>}
           <Row className="mb-3">
             <Col md={4}>
               <Form.Group>
@@ -162,7 +207,6 @@ const Solicitudes = () => {
                 <Form.Select 
                   value={categoria} 
                   onChange={e => { setCategoria(e.target.value); setRecurso(''); }} 
-                  required
                 >
                   <option value="">Seleccione</option>
                   {Object.keys(recursosPorCategoria).map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
@@ -175,8 +219,7 @@ const Solicitudes = () => {
                 <Form.Select 
                   value={recurso} 
                   onChange={e => setRecurso(e.target.value)} 
-                  disabled={!categoria} 
-                  required
+                  disabled={!categoria}
                 >
                   <option value="">Seleccione</option>
                   {(recursosPorCategoria[categoria] || []).map((rec, i) => <option key={i} value={rec}>{rec}</option>)}
@@ -191,7 +234,6 @@ const Solicitudes = () => {
                   value={cantidad} 
                   min={1} 
                   onChange={e => setCantidad(Number(e.target.value))} 
-                  required
                 />
               </Form.Group>
             </Col>
@@ -215,8 +257,7 @@ const Solicitudes = () => {
                     <td>
                       <Form.Select 
                         value={r.categoria} 
-                        onChange={(e) => handleEdit(i, 'categoria', e.target.value)} 
-                        required
+                        onChange={(e) => handleEdit(i, 'categoria', e.target.value)}
                       >
                         <option value="">Seleccione</option>
                         {Object.keys(recursosPorCategoria).map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
@@ -226,8 +267,7 @@ const Solicitudes = () => {
                       <Form.Select 
                         value={r.recurso} 
                         onChange={(e) => handleEdit(i, 'recurso', e.target.value)} 
-                        disabled={!r.categoria} 
-                        required
+                        disabled={!r.categoria}
                       >
                         <option value="">Seleccione</option>
                         {(recursosPorCategoria[r.categoria] || []).map((rec, idx) => <option key={idx} value={rec}>{rec}</option>)}
@@ -238,8 +278,7 @@ const Solicitudes = () => {
                         type="number" 
                         value={r.cantidad} 
                         min={1} 
-                        onChange={(e) => handleEdit(i, 'cantidad', Number(e.target.value))} 
-                        required
+                        onChange={(e) => handleEdit(i, 'cantidad', Number(e.target.value))}
                       />
                     </td>
                     <td className="text-center">
@@ -256,6 +295,76 @@ const Solicitudes = () => {
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
           <Button variant="primary" onClick={handleGuardarSolicitud} disabled={solicitudTemp.length === 0}>Guardar</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* MODAL EDITAR RECURSOS EXISTENTES */}
+      <Modal show={showEditRecursos} onHide={() => setShowEditRecursos(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Editar Recursos</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {solicitudEditRecursos && (
+            <Table bordered>
+              <thead>
+                <tr>
+                  <th>Categoría</th>
+                  <th>Recurso</th>
+                  <th>Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                {solicitudEditRecursos.recursos.map((r, i) => (
+                  <tr key={i}>
+                    <td>
+                      <Form.Select
+                        value={r.categoria}
+                        onChange={(e) => {
+                          const updated = [...solicitudEditRecursos.recursos];
+                          updated[i].categoria = e.target.value;
+                          updated[i].recurso = '';
+                          setSolicitudEditRecursos({ ...solicitudEditRecursos, recursos: updated });
+                        }}
+                      >
+                        <option value="">Seleccione</option>
+                        {Object.keys(recursosPorCategoria).map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
+                      </Form.Select>
+                    </td>
+                    <td>
+                      <Form.Select
+                        value={r.recurso}
+                        onChange={(e) => {
+                          const updated = [...solicitudEditRecursos.recursos];
+                          updated[i].recurso = e.target.value;
+                          setSolicitudEditRecursos({ ...solicitudEditRecursos, recursos: updated });
+                        }}
+                        disabled={!r.categoria}
+                      >
+                        <option value="">Seleccione</option>
+                        {(recursosPorCategoria[r.categoria] || []).map((rec, idx) => <option key={idx} value={rec}>{rec}</option>)}
+                      </Form.Select>
+                    </td>
+                    <td>
+                      <Form.Control
+                        type="number"
+                        value={r.cantidad}
+                        min={1}
+                        onChange={(e) => {
+                          const updated = [...solicitudEditRecursos.recursos];
+                          updated[i].cantidad = Number(e.target.value);
+                          setSolicitudEditRecursos({ ...solicitudEditRecursos, recursos: updated });
+                        }}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditRecursos(false)}>Cancelar</Button>
+          <Button variant="primary" onClick={handleGuardarEdicionRecursos}>Guardar Cambios</Button>
         </Modal.Footer>
       </Modal>
     </div>

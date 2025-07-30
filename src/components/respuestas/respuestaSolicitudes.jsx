@@ -124,12 +124,7 @@ const SolicitudesAsignacion = () => {
     setShowCancelarModal(true);
   };
 
-  // Abrir modal estatus
-  const handleOpenStatusModal = (solicitud) => {
-    setSelectedSolicitud(solicitud);
-    setNewStatus(solicitud.estatus === "Pendiente" || solicitud.estatus === "En espera" ? solicitud.estatus : "Pendiente");
-    setShowStatusModal(true);
-  };
+ 
 
   // Confirmar cancelación
   const handleConfirmarCancelar = () => {
@@ -212,11 +207,11 @@ const SolicitudesAsignacion = () => {
         <thead className="text-center">
           <tr>
             <th># Solicitud</th>
-            <th>Área</th>
             <th>Solicitante</th>
+            <th>Área</th>
+            <th>Atendio</th>
             <th>Fecha</th>
             <th>Estatus</th>
-            <th>Atendio</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -224,8 +219,8 @@ const SolicitudesAsignacion = () => {
           {currentSolicitudes.map(s => (
             <tr key={s.id}>
               <td>{s.id}</td>
-              <td>{s.area}</td>
               <td>{s.solicitante}</td>
+              <td>{s.area}</td>
               <td>{s.fecha}</td>
               <td>Rosa Maria Tolentino</td>
               <td>{s.estatus}</td>
@@ -233,13 +228,13 @@ const SolicitudesAsignacion = () => {
                 {(s.estatus === "Pendiente" || s.estatus === "En espera") ? (
                   <>
                     <Button size="sm" variant="outline-info" onClick={() => handleOpenAsignacion(s)}>Asignarr</Button>{' '}
-                    <Button size="sm" variant="outline-warning" onClick={() => handleOpenStatusModal(s)}>Estatus</Button>{' '}
+                    
                     <Button size="sm" variant="outline-danger" onClick={() => handleOpenCancelar(s)}>Cancelar</Button>
                   </>
                 ) : (
                   <>
                     <Button size="sm" variant="outline-primary" onClick={() => handleDownloadPDF(s)} title="Descargar PDF"><BsFilePdf /></Button>{' '}
-                    <Button size="sm" variant="outline-secondary" onClick={handleViewHTML} title="Ver documento"><BsFileEarmarkText /></Button>
+                   {/** <Button size="sm" variant="outline-secondary" onClick={handleViewHTML} title="Ver documento"><BsFileEarmarkText /></Button> */}
                   </>
                 )}
               </td>

@@ -3,8 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Detalle de Solicitud/entrega o Cancelacion</title>
+    <title>Detalle de Solicitud</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         body {
             margin: 40px;
@@ -13,13 +14,11 @@
         
         .document-header {
             text-align: center;
-            margin-bottom: 30px;
+          
+            
         }
         
-        .document-header h2 {
-            font-size: 24px;
-            font-weight: bold;
-        }
+      
         
         .document-section {
             margin-bottom: 25px;
@@ -51,69 +50,57 @@
 
 <body>
 
-    <div class="document-header">
-        <h2>Detalle de Solicitud</h2>
-    </div>
-
-    <div class="document-section border-box">
-
+    <div class="d-flex  gap-3 pb-3">
+        <img src="/logo.jpg" alt="" width="100px">
+        <div class="text-center pt-3">
+         <h4>Direccion de Recursos Materiales y Servicios Generales</h4>
+         <h5>Constancia de Entrega</h5>
+        </div>
         
-        <p><span class="info-label">Número de Solicitud:</span> <span id="numSolicitud">1</span></p>
-        <p><span class="info-label">Área:</span> <span id="area">Recursos Humanos</span></p>
-        <p><span class="info-label">Solicitante:</span> <span id="solicitante">Ana López</span></p>
-        <p><span class="info-label">Fecha de Solicitud:</span> <span id="fechaSolicitud">2025-07-20</span></p>
-        <p><span class="info-label">Fecha de Salida:</span> <span id="fechaSolicitud">2025-07-20</span></p>
-        <p><span class="info-label">Fecha de Entrega:</span> <span id="fechaSolicitud">2025-07-20</span></p>
+   </div>
+   <div style="grid-template-columns: 1fr 1fr;" class="d-grid gap-5 pb-3">
+    <div class="p-1">   
+        <p> <strong>Núm. de Solicitud :</strong> <span id="numSolicitud">1</span></p>
+        <p> <strong>Área :</strong> <span id="area">Recursos Humanos</span></p>
+        <p> <strong>Solicitante :</strong> <span id="descripcion"> Ana Lopez Reveriño</span></p>
+       
+    </div> 
 
-
-
-
-     
-        <p><span class="info-label">Autorizó:</span> <span id="autorizo">Ana Sofia Cano</span></p>
-        <p><span class="info-label">Descripción de Cancelación:</span> <span id="cancelDesc">No aplica</span></p>
-        <p><span class="info-label">Fecha del último movimiento:</span> <span id="fechaMovimiento">2025-07-21</span></p>
-    </div>
-
+    <div class="p-1">
+        <p> <strong>Fecha de Solicitud :</strong> <span id="descripcion">2025-07-20</span></p>
+        <p> <strong>Fecha de Autorización :</strong> <span id="descripcion">2025-07-20</span></p>
+        <p> <strong>Autorizo :</strong> <span id="descripcion">Gil Edwin Cruz </span></p>
+    </div>       
+   </div>
+    
     <div class="document-section">
-        <h5>Recursos Solicitados</h5>
-        <table class="table table-bordered">
-            <thead>
+        <p class="text-center pb-2">Recibí de esta direccion a entera santisfaccion los siguientes insumos, materiales y/o servicio</p>
+        <table class="table table-hover table-striped table-bordered shadow rounded pb-3">
+            <thead class="table-dark">
                 <tr>
-                    <th>Recurso</th>
-                    <th>Cantidad Solicitada</th>
-                    <th>Stock</th>
-                </tr>
-            </thead>
-            <tbody id="tablaRecursos">
-                <tr>
-                    <td>Acuarela escolar</td>
-                    <td>10</td>
-                    <td>50</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="document-section">
-        <h5>Recursos Agregados</h5>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Recurso</th>
                     <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>Recurso</th>
                 </tr>
             </thead>
-            <tbody id="tablaAgregados">
+            <tbody  id="tablaRecursos">
                 <tr>
-                    <td>Memoria USB 16gb</td>
-                    <td>5</td>
+                    <td>1</td>
+                    <td>10</td>
+                    <td>Hojas Blancas</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
+    
     <div class="footer">
-
+    <div style="text-align: center; margin-top: 50px; grid-template-columns: 1fr 1fr;"">
+<div> <p>______________________________</p>
+  <p><strong>Fernanda Cruz Hernández</strong></p>
+  <p><em>Unidad de Planeación y Prospectiva</em></p></div>
+  
+</div>
     </div>
 
 </body>

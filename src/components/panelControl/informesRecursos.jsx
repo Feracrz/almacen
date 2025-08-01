@@ -4,12 +4,53 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
 
+
+
 const InformesRecursos = () => {
   const [datos, setDatos] = useState([
     { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+        { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+            { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                    { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                        { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                            { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                                { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                                    { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                                        { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                                            { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                                                { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                                                    { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
+                                                        { categoria: "Papeleria", recurso: "Hoja carta", cantidad: 15, fecha: "2025-07-01" },
     { categoria: "Material de Limpieza", recurso: "Escoba", cantidad: 20, fecha: "2025-07-10" },
+        { categoria: "Material de Limpieza", recurso: "Escoba", cantidad: 20, fecha: "2025-07-10" },
+            { categoria: "Material de Limpieza", recurso: "Escoba", cantidad: 20, fecha: "2025-07-10" },
+                { categoria: "Material de Limpieza", recurso: "Escoba", cantidad: 20, fecha: "2025-07-10" },
+               
+
+
+    
+    
     { categoria: "Insumos de oficina", recurso: "Toner", cantidad: 10, fecha: "2025-07-05" },
+    { categoria: "Insumos de oficina", recurso: "Toner", cantidad: 10, fecha: "2025-07-05" },
+    { categoria: "Insumos de oficina", recurso: "Toner", cantidad: 10, fecha: "2025-07-05" },
+    { categoria: "Insumos de oficina", recurso: "Toner", cantidad: 10, fecha: "2025-07-05" },
+    { categoria: "Insumos de oficina", recurso: "Toner", cantidad: 10, fecha: "2025-07-05" },
+    { categoria: "Insumos de oficina", recurso: "Toner", cantidad: 10, fecha: "2025-07-05" },
+    { categoria: "Insumos de oficina", recurso: "Toner", cantidad: 10, fecha: "2025-07-05" },
+
     { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Galletas", cantidad: 25, fecha: "2025-07-15" },
+
    
   ]);
 
@@ -100,73 +141,18 @@ const InformesRecursos = () => {
   const categoriasUnicas = [...new Set(datos.map((d) => d.categoria))];
 
   return (
-    <div className="container mt-4">
-      <h2>Informe de Recursos por Categoría</h2>
+    <div className="container-fluid mt-4">
+   {error && <Alert variant="danger">{error}</Alert>}
 
-      {error && <Alert variant="danger">{error}</Alert>}
-
-      {/* Filtros */}
-      <Card className="mb-4 p-3">
-        <Row>
-          <Col md={4}>
-            <Form.Group>
-              <Form.Label>Categoría</Form.Label>
-              <Form.Control
-                as="select"
-                value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
-              >
-                <option value="">Todas</option>
-                {categoriasUnicas.map((cat, idx) => (
-                  <option key={idx} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-          </Col>
-          <Col md={3}>
-            <Form.Group>
-              <Form.Label>Fecha inicio</Form.Label>
-              <Form.Control
-                type="date"
-                value={fechaInicio}
-                onChange={(e) => setFechaInicio(e.target.value)}
-              />
-            </Form.Group>
-          </Col>
-          <Col md={3}>
-            <Form.Group>
-              <Form.Label>Fecha fin</Form.Label>
-              <Form.Control
-                type="date"
-                value={fechaFin}
-                onChange={(e) => setFechaFin(e.target.value)}
-              />
-            </Form.Group>
-          </Col>
-          <Col md={2} className="d-flex align-items-end">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setFiltroCategoria("");
-                setFechaInicio("");
-                setFechaFin("");
-              }}
-            >
-              Limpiar
-            </Button>
-          </Col>
-        </Row>
-      </Card>
 
       {/* Botones de exportación */}
       <div className="mb-3">
+        <h5> Descarga Gerneral</h5>
         <Button variant="success" className="me-2" onClick={exportarExcel}>
-          Exportar a Excel
+          Excel
         </Button>
         <Button variant="danger" onClick={exportarPDF}>
-          Exportar a PDF
+          PDF
         </Button>
       </div>
 
@@ -180,12 +166,14 @@ const InformesRecursos = () => {
               <Card>
                 <Card.Header as="h5">{categoria}</Card.Header>
                 <Card.Body>
-                  <Table striped bordered hover>
+                    <div className="table-responsive" style={{ maxHeight: "200px", overflowY: "auto" }}>
+                  <Table striped bordered hover >
                     <thead>
                       <tr>
                         <th>Recurso</th>
                         <th>Cantidad</th>
-                        <th>Fecha</th>
+                        <th>Unidad</th>
+                        
                       </tr>
                     </thead>
                     <tbody>
@@ -198,6 +186,7 @@ const InformesRecursos = () => {
                       ))}
                     </tbody>
                   </Table>
+                  </div>
                   <p>
                     <strong>
                       Total en {categoria}:{" "}
@@ -210,6 +199,8 @@ const InformesRecursos = () => {
           ))
         )}
       </Row>
+
+
 
       {/* Total general */}
       <Card className="mt-4">

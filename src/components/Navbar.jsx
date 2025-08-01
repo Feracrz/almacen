@@ -12,7 +12,6 @@ const Navbar = ({ onSelect }) => {
     { icon: "bi-boxes", label: "Almacen e Inventario" },
     { icon: "bi-truck-flatbed", label: "Solicitudes" },
     { icon: "bi-box", label: "Validacion de Solicitudes" },
-    { icon: "bi-bar-chart-line", label: "Estadisticas" },
     { icon: "bi-people", label: "Usuarios" },
     { icon: "bi-gear", label: "Administración" },
     { icon: "bi-gear", label: "Login" },

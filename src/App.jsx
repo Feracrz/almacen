@@ -7,7 +7,6 @@ import Solicitudes from './components/solicitudes/agregrarSolicitudes';
 import Respuesta from './components/respuestas/respuestaSolicitudes';
 import Notificaciones from './components/notificaciones/notificaciones';
 import Usuarios from './components/Usuarios/usuarios';
-import Estadisticas from './components/Estadisticas/estadisticas';
 import Login from './components/login/login';
 
 const App = () => {
@@ -60,14 +59,7 @@ case "Usuarios":
           </div>
         );
 
-        case "Estadisticas":
-        return (
-          <div className='p-4'>
-          <h2 className="p-4">Estadisticas</h2>;
-            <Estadisticas />
-          </div>
-        );
-
+   
 
       case "Login":
              return (

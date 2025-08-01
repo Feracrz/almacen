@@ -4,6 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
+import InformesRecursos from './informesRecursos';
 
 const dataLine = [
   { name: 'Ene', value: 1900 },
@@ -77,46 +78,17 @@ const Dashboard = () => {
               <div className="text-success small fw-semibold">▲ 4.3% este mes</div>
             </Card.Body>
           </Card>
-
-          <Card className="mb-3 shadow-sm border-0 rounded-4">
-            <Card.Body>
-              <div className="text-muted small">En Stock</div>
-              <h2 className="fw-bold text-dark">1,876</h2>
-              <div className="text-success small fw-semibold">▲ 2.7% este mes</div>
-            </Card.Body>
-          </Card>
-
           <Card className="mb-3 shadow-sm border-0 rounded-4">
             <Card.Body>
               <div className="text-muted small">Productos Agotados</div>
               <h2 className="fw-bold text-dark">87</h2>
               <div className="text-danger small fw-semibold">▼ 1.5% este mes</div>
             </Card.Body>
-          </Card>
-
-          <Card className="mb-3 shadow-sm border-0 rounded-4">
-            <Card.Body>
-              <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    dataKey="value"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={60}
-                    innerRadius={35}
-                    paddingAngle={3}
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </Card.Body>
-          </Card>
+          </Card> 
         </div>
       </div>
+
+      <InformesRecursos/>
     </div>
   );
 };

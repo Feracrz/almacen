@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar'; // Asegúrate de que Navbar es el Sidebar
-import Inventario from './components/inventario/inventario';
+
 import Panel from './components/panelControl/panel';
 import Registro from './components/registroCompra/Registro';
 import Solicitudes from './components/solicitudes/agregrarSolicitudes';
 import Respuesta from './components/respuestas/respuestaSolicitudes';
 import Notificaciones from './components/notificaciones/notificaciones';
 import Usuarios from './components/Usuarios/usuarios';
+
 import Login from './components/login/login';
 
 const App = () => {

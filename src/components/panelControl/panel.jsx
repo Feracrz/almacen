@@ -1,96 +1,217 @@
-import React, { useState } from 'react';
-import { Card, Button, ButtonGroup } from 'react-bootstrap';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
-} from 'recharts';
-import InformesRecursos from './informesRecursos';
+import React, { useState } from "react";
+import { Table, Card, Row, Col, Form, Button, Alert } from "react-bootstrap";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
-const dataLine = [
-  { name: 'Ene', value: 1900 },
-  { name: 'Feb', value: 2000 },
-  { name: 'Mar', value: 2150 },
-  { name: 'Abr', value: 2220 },
-  { name: 'May', value: 2300 },
-  { name: 'Jun', value: 2350 },
-  { name: 'Jul', value: 2370 },
-  { name: 'Ago', value: 2450 },
-  { name: 'Sep', value: 2580 },
-  { name: 'Oct', value: 2700 },
-  { name: 'Nov', value: 2850 },
-  { name: 'Dic', value: 3000 },
-];
+const InformesRecursos = () => {
+  const [datos, setDatos] = useState([
+    { categoria: "Papeleria", recurso: "Hoja carta", unidad: "Paquete", cantidad: 15, fecha: "2025-07-01" },
+    { categoria: "Material de Limpieza", recurso: "Escoba", unidad: "Pieza", cantidad: 20, fecha: "2025-07-10" },
+    { categoria: "Insumos de oficina", recurso: "Toner", unidad: "Cartucho", cantidad: 10, fecha: "2025-07-05" },
+    { categoria: "Consumibles", recurso: "Galletas", unidad: "Caja", cantidad: 25, fecha: "2025-07-15" },
+    { categoria: "Consumibles", recurso: "Refrescos", unidad: "Botella", cantidad: 12, fecha: "2025-07-20" },
+  ]);
 
-const pieData = [
-  { name: 'A', value: 400 },
-  { name: 'B', value: 300 },
-  { name: 'C', value: 300 },
-  { name: 'D', value: 200 },
-];
+  const [filtroCategoria, setFiltroCategoria] = useState("");
+  const [filtroRecurso, setFiltroRecurso] = useState("");
+  const [error, setError] = useState("");
 
-const COLORS = ['#0d6efd', '#198754', '#ffc107', '#dc3545'];
 
-const Dashboard = () => {
-  const [filtro, setFiltro] = useState('Año');
+  const validarDatos = () => {
+    for (let item of datos) {
+      if (!item.categoria || !item.recurso || !item.unidad || !item.cantidad) {
+        setError("Todos los campos (Categoría, Recurso, Unidad y Cantidad) son obligatorios.");
+        return false;
+      }
+    }
+    setError("");
+    return true;
+  };
+
+
+  const datosFiltrados = datos.filter((item) => {
+    return (
+      (filtroCategoria ? item.categoria === filtroCategoria : true) &&
+      (filtroRecurso ? item.recurso === filtroRecurso : true)
+    );
+  });
+
+
+  const categoriasAgrupadas = datosFiltrados.reduce((acc, item) => {
+    if (!acc[item.categoria]) {
+      acc[item.categoria] = [];
+    }
+    acc[item.categoria].push(item);
+    return acc;
+  }, {});
+
+  const totalGeneral = datosFiltrados.reduce((sum, item) => sum + Number(item.cantidad), 0);
+
+ 
+  const categoriasUnicas = [...new Set(datos.map((d) => d.categoria))];
+  const recursosUnicos = [
+    ...new Set(
+      datos
+        .filter((d) => (filtroCategoria ? d.categoria === filtroCategoria : true))
+        .map((d) => d.recurso)
+    ),
+  ];
+
+  const exportarPDF = () => {
+    if (!validarDatos()) return;
+
+    const doc = new jsPDF();
+    doc.text("Informe de Recursos", 14, 10);
+    let finalY = 20;
+
+    Object.keys(categoriasAgrupadas).forEach((categoria) => {
+      doc.text(`Categoría: ${categoria}`, 14, finalY);
+      finalY += 6;
+
+      const rows = categoriasAgrupadas[categoria].map((item) => [
+        item.recurso,
+        item.unidad,
+        item.cantidad,
+      ]);
+
+      doc.autoTable({
+        head: [["Recurso", "Unidad de Medida", "Cantidad"]],
+        body: rows,
+        startY: finalY,
+        theme: "grid",
+      });
+
+      finalY = doc.lastAutoTable.finalY + 10;
+    });
+
+    doc.text(`Total General: ${totalGeneral}`, 14, finalY);
+    doc.save(`informe_recursos_${filtroRecurso || "general"}.pdf`);
+  };
+
+  const exportarExcel = () => {
+    if (!validarDatos()) return;
+
+    const hoja = XLSX.utils.json_to_sheet(datosFiltrados);
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, "Informe");
+    XLSX.writeFile(libro, `informe_recursos_${filtroRecurso || "general"}.xlsx`);
+  };
 
   return (
-    <div className="container-fluid py-4">
-      <h3 className="fw-bold text-primary mb-4">Panel de Control</h3>
+    <div className="container-fluid mt-4">
+      {error && <Alert variant="danger">{error}</Alert>}
 
-      <div className="row">
-        <div className="col-lg-8 mb-4">
-          <Card className="shadow border-0 rounded-4">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h5 className="fw-semibold mb-0">Tendencia de Inventario</h5>
-                <ButtonGroup>
-                  {['Semana', 'Mes', 'Año'].map(periodo => (
-                    <Button
-                      key={periodo}
-                      variant={filtro === periodo ? 'primary' : 'outline-primary'}
-                      size="sm"
-                      onClick={() => setFiltro(periodo)}
-                    >
-                      {periodo}
-                    </Button>
+      <Card className="mb-3">
+        <Card.Body>
+          <Row>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Categoría</Form.Label>
+                <Form.Select
+                  value={filtroCategoria}
+                  onChange={(e) => setFiltroCategoria(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  {categoriasUnicas.map((cat, i) => (
+                    <option key={i} value={cat}>{cat}</option>
                   ))}
-                </ButtonGroup>
-              </div>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Recurso</Form.Label>
+                <Form.Select
+                  value={filtroRecurso}
+                  onChange={(e) => setFiltroRecurso(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  {recursosUnicos.map((rec, i) => (
+                    <option key={i} value={rec}>{rec}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+          <div className="mt-3 text-end">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setFiltroCategoria("");
+                setFiltroRecurso("");
+              }}
+            >
+              Limpiar filtros
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
 
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={dataLine}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="#0d6efd" fill="#dbeafe" dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card.Body>
-          </Card>
-        </div>
-
-        <div className="col-lg-4">
-          <Card className="mb-3 shadow-sm border-0 rounded-4">
-            <Card.Body>
-              <div className="text-muted small">Total de Productos</div>
-              <h2 className="fw-bold text-dark">2,384</h2>
-              <div className="text-success small fw-semibold">▲ 4.3% este mes</div>
-            </Card.Body>
-          </Card>
-          <Card className="mb-3 shadow-sm border-0 rounded-4">
-            <Card.Body>
-              <div className="text-muted small">Productos Agotados</div>
-              <h2 className="fw-bold text-dark">87</h2>
-              <div className="text-danger small fw-semibold">▼ 1.5% este mes</div>
-            </Card.Body>
-          </Card> 
-        </div>
+    
+      <div className="mb-3">
+        <h5>Descarga General</h5>
+        <Button variant="success" className="me-2" onClick={exportarExcel}>
+          Excel
+        </Button>
+        <Button variant="danger" onClick={exportarPDF}>
+          PDF
+        </Button>
       </div>
 
-      <InformesRecursos/>
+      
+      <Row>
+        {Object.keys(categoriasAgrupadas).length === 0 ? (
+          <p>No hay datos con los filtros seleccionados.</p>
+        ) : (
+          Object.keys(categoriasAgrupadas).map((categoria, index) => (
+            <Col
+              md={filtroCategoria || filtroRecurso ? 12 : 6}
+              key={index}
+              className="mb-4"
+            >
+              <Card>
+                <Card.Header as="h5">{categoria}</Card.Header>
+                <Card.Body>
+                  <div
+                    className="table-responsive"
+                    style={{ maxHeight: "400px", overflowY: "auto" }}
+                  >
+                    <Table striped bordered hover size="sm">
+                      <thead>
+                        <tr>
+                          <th>Recurso</th>
+                          <th>Unidad de Medida</th>
+                          <th>Cantidad</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {categoriasAgrupadas[categoria].map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.recurso}</td>
+                            <td>{item.unidad}</td>
+                            <td>{Number(item.cantidad)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                  <p>
+                    <strong>
+                      Total en {categoria}:{" "}
+                      {categoriasAgrupadas[categoria].reduce((sum, i) => sum + Number(i.cantidad), 0)}
+                    </strong>
+                  </p>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))
+        )}
+      </Row>
+
+ 
     </div>
   );
 };
 
-export default Dashboard;
+export default InformesRecursos;

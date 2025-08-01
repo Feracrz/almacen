@@ -34,28 +34,11 @@ export default function Login() {
           >
             <div className="text-center mb-4">
               <img
-                src="../../../public/logo.jpg" // Cambia por tu logo
-                alt="Logo"
+                src="../../../public/logo.jpg" 
                 style={{ width: "80px" }}
               />
               <h4 className="mt-3 fw-bold">Bienvenido de nuevo</h4>
               <p className="text-muted">Inicia sesión en tu cuenta</p>
-            </div>
-
-            {/* Botón Google */}
-            <Button
-              variant="outline-secondary"
-              className="w-100 fw-bold d-flex align-items-center justify-content-center"
-              style={{ borderRadius: "8px" }}
-            >
-            
-            </Button>
-
-            {/* Separador */}
-            <div className="d-flex align-items-center my-3">
-              <hr className="flex-grow-1" />
-              <span className="mx-2 text-muted">o</span>
-              <hr className="flex-grow-1" />
             </div>
 
             {/* Formulario */}

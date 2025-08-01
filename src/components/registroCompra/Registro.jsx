@@ -411,7 +411,7 @@ const handleSubmit = (event) => {
           </Button>
         </Col>
       </Row>
-            {/* Modal de Factura */}
+            {/*Modal de la Factura*/}
       <Modal size="xl" show={showFacturaModal} onHide={() => setShowFacturaModal(false)}>
   <Modal.Header closeButton>
     <Modal.Title>Cargar Factura</Modal.Title>
@@ -672,7 +672,7 @@ const handleSubmit = (event) => {
               <BsSlashCircle />
             </Button>*/}
 
-            {/* Botón o input para XML */}
+            {/*XML */}
             {!item.xmlFile ? (
               <Form.Group className="mb-1">
                 <Form.Control
@@ -694,7 +694,7 @@ const handleSubmit = (event) => {
               </Button>
             )}
 
-            {/* Botón o input para PDF */}
+            {/* PDF */}
             {!item.pdfFile ? (
               <Form.Group className="mb-1">
                 <Form.Control
@@ -731,7 +731,7 @@ const handleSubmit = (event) => {
   </Modal.Header>* 
   <Modal.Body>
     <Form>
-      {/* Categoría */}
+      {/*categoria*/}
       <Form.Group className="mb-2">
         <Form.Label>Categoría <span className="text-danger">*</span></Form.Label>
         <Form.Select
@@ -756,7 +756,7 @@ const handleSubmit = (event) => {
         </Form.Control.Feedback>
       </Form.Group>
 
-      {/* Recurso */}
+      {/*rcurso*/}
       <Form.Group className="mb-2">
         <Form.Label>Recurso <span className="text-danger">*</span></Form.Label>
         <Form.Select

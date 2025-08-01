@@ -157,7 +157,7 @@ const Solicitudes = () => {
     setShowModal(false);
   };
 
-  // Abrir modal de edición de recursos
+  // brir modal de edición de recursos
   const handleEditarRecursos = (sol) => {
     setSolicitudEditRecursos({ ...sol });
     setShowEditRecursos(true);
@@ -193,7 +193,7 @@ const Solicitudes = () => {
         onEditarRecursos={handleEditarRecursos} 
       />
 
-      {/* MODAL NUEVA SOLICITUD */}
+      {/*MODAL NUEVA SOLICITU´verda*/}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Nueva Solicitud</Modal.Title>
@@ -298,7 +298,7 @@ const Solicitudes = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* MODAL EDITAR RECURSOS EXISTENTES */}
+      {/*MODAL EDITAR RECURSOS EXISTENTES*/}
       <Modal show={showEditRecursos} onHide={() => setShowEditRecursos(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Editar Recursos</Modal.Title>

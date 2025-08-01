@@ -9,7 +9,7 @@ const GestionUsuarios = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  // Catálogo de áreas de adscripción
+  // Catálogo de areas de adscripción
   const areasCatalogo = [
     "Administración",
     "Recursos Humanos",
@@ -118,7 +118,7 @@ const GestionUsuarios = () => {
         </tbody>
       </Table>
 
-      {/* Modal */}
+      {/*modalirri*/}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>{editingIndex !== null ? "Editar Usuario" : "Agregar Usuario"}</Modal.Title>
